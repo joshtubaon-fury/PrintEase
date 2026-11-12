@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintEase</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: persistent top bar, one page at a time (home, auth, dashboards, profiles) over a shared print queue */
+:root{
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --bg:#f2f3f8; --surface:#ffffff; --surface-2:#f7f8fc; --ink:#14172b; --muted:#5b6078; --line:#e0e3ee;
+  --accent:#3344d1; --accent-ink:#ffffff; --accent-soft:#e3e7ff;
+  --cy:#0aa5c8; --cy-soft:#d3f2fa; --cy-ink:#055a70;
+  --mg:#e0267f; --mg-soft:#fddcec; --mg-ink:#a0125a;
+  --yl:#ffc83d; --yl-soft:#fff0bf; --yl-ink:#7a5600; --hl:#ffd84d;
+  --pe-bg:#ececf2; --pe-fg:#505570;
+  --q-bg:#fff1c7; --q-fg:#7a5600;
+  --p-bg:#d5f1f7; --p-fg:#0b5668;
+  --c-bg:#d9f3e1; --c-fg:#1b6a3a;
+  --d-bg:#fbe0ee; --d-fg:#9b1b5c;
+  --shadow:0 1px 2px rgba(20,23,43,.06),0 4px 16px rgba(20,23,43,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1120; --surface:#171b31; --surface-2:#1d2240; --ink:#eceefa; --muted:#9aa0bd; --line:#2a3050;
+  --accent:#93a2ff; --accent-ink:#0e1120; --accent-soft:#252c5a;
+  --cy:#38c7e8; --cy-soft:#0e3441; --cy-ink:#8fe0f2;
+  --mg:#ff5fa8; --mg-soft:#4b1634; --mg-ink:#ffa8d2;
+  --yl:#ffd24d; --yl-soft:#4a3a0c; --yl-ink:#ffd978; --hl:#6b5200;
+  --pe-bg:#272b44; --pe-fg:#a9aec9; --q-bg:#4a3a0c; --q-fg:#ffd978; --p-bg:#0f3a46; --p-fg:#8fe0f2;
+  --c-bg:#133c24; --c-fg:#8fe0ae; --d-bg:#4b1634; --d-fg:#ffa8d2;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1120; --surface:#171b31; --surface-2:#1d2240; --ink:#eceefa; --muted:#9aa0bd; --line:#2a3050;
+  --accent:#93a2ff; --accent-ink:#0e1120; --accent-soft:#252c5a;
+  --cy:#38c7e8; --cy-soft:#0e3441; --cy-ink:#8fe0f2;
+  --mg:#ff5fa8; --mg-soft:#4b1634; --mg-ink:#ffa8d2;
+  --yl:#ffd24d; --yl-soft:#4a3a0c; --yl-ink:#ffd978; --hl:#6b5200;
+  --pe-bg:#272b44; --pe-fg:#a9aec9; --q-bg:#4a3a0c; --q-fg:#ffd978; --p-bg:#0f3a46; --p-fg:#8fe0f2;
+  --c-bg:#133c24; --c-fg:#8fe0ae; --d-bg:#4b1634; --d-fg:#ffa8d2;
+  --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+h1,h2,h3{font-family:var(--font-display);margin:0;line-height:1.15;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin-inline:auto}
+.mono{font-family:var(--font-mono);font-size:12.5px;letter-spacing:.02em}
+.muted{color:var(--muted)}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.ic{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-4px}
+.ic.sm{width:14px;height:14px;vertical-align:-2px}
+.ic.lg{width:26px;height:26px}
+.ic.xl{width:44px;height:44px}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;border:0;background:none;padding:0;cursor:pointer;text-align:left}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--accent);display:grid;place-items:center;flex:none;color:var(--accent-ink)}
+.brand h1{font-size:21px}
+.brand p{margin:0;font-size:12.5px;color:var(--muted)}
+.nav{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.chip{display:flex;align-items:center;gap:10px;margin-right:6px}
+.chip-t{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.chip-t b{font-size:14px;overflow-wrap:anywhere}
+.chip-t small{color:var(--muted);font-size:12px}
+.avatar{border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar.sm{width:36px;height:36px;font-size:13px}
+.avatar.md{width:72px;height:72px;font-size:26px}
+.avatar.xl{width:104px;height:104px;font-size:38px}
+.relwrap{position:relative}
+.bell{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:10px;width:38px;height:38px;cursor:pointer;display:grid;place-items:center}
+.bell .dot{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:10px;background:var(--d-fg);color:var(--surface);font-size:11px;font-weight:700;display:grid;place-items:center;padding-inline:5px}
+.panel{position:absolute;right:0;top:46px;width:min(360px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:14px;z-index:10}
+.panel h3{font-size:16px;margin-bottom:8px}
+.note{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+.note.unread::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;margin-top:7px}
+.note:not(.unread){padding-left:18px}
+.note time{display:block;color:var(--muted);font-size:12px}
+
+/* buttons, pills, forms */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.bad{color:var(--d-fg)}
+.btn.sm{padding:6px 11px;font-size:13px}
+.btn.lg{padding:12px 24px;font-size:16px}
+.btn.full{width:100%;justify-content:center}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.link{border:0;background:none;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.s-pending{background:var(--pe-bg);color:var(--pe-fg)}
+.s-queued{background:var(--q-bg);color:var(--q-fg)}
+.s-printing{background:var(--p-bg);color:var(--p-fg)}
+.s-completed{background:var(--c-bg);color:var(--c-fg)}
+.s-declined{background:var(--d-bg);color:var(--d-fg)}
+.tag{font-size:11.5px;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:2px 7px;font-weight:600;display:inline-block}
+.field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+.field input,.field select,.field textarea,.toolbar input,.toolbar select,.job select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px;color:var(--ink);width:100%;min-width:0}
+.err{margin:0;color:var(--d-fg);background:var(--d-bg);border-radius:8px;padding:8px 12px;font-size:13.5px}
+.pw{position:relative}
+.pw input{padding-right:62px}
+.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font-weight:600;font-size:12.5px;cursor:pointer;padding:6px}
+
+/* layout blocks */
+.head{display:flex;flex-wrap:wrap;gap:12px 24px;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.head h2{font-size:30px}
+.head p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0;display:flex;gap:12px;align-items:center}
+.stat b{display:block;font-family:var(--font-display);font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted)}
+.stat .ic{color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px;min-width:0}
+.card>h3{font-size:18px;margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.card>.sub{margin:0 0 14px;font-size:13.5px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+@media(max-width:860px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.stack>*+*{margin-top:18px}
+.narrow{max-width:520px;margin-inline:auto}
+.back{display:inline-flex;margin-bottom:14px}
+.seg{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:18px}
+.seg button{flex:1;border:0;background:none;border-radius:7px;padding:8px 12px;font-weight:600;font-size:14px;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px}
+.toolbar input{flex:1 1 220px;width:auto}
+.toolbar select{width:auto}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--muted);font-size:14px}
+.empty .ic{margin-bottom:8px}
+.footnote{margin-top:28px;font-size:12.5px;color:var(--muted)}
+
+/* landing */
+.hero{text-align:center;padding:44px 0 36px}
+.hero h2{font-size:clamp(32px,5.5vw,52px);margin-bottom:14px}
+.hero p{max-width:56ch;margin:0 auto 24px;font-size:18px;color:var(--muted)}
+.feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.feat h3{font-size:19px}
+.feat ul{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:14px}
+.feat ul li::before{content:"•";margin-right:8px;color:var(--accent)}
+.section-h{text-align:center;font-size:28px;margin:30px 0 20px}
+
+/* auth */
+.authwrap{min-height:calc(100vh - 230px);display:flex;align-items:center;justify-content:center;padding:12px 0 36px}
+.authwrap .authbox{width:100%}
+.authbox{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;max-width:520px;margin-inline:auto}
+.authbox.two{max-width:920px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+@media(max-width:800px){.authbox.two{grid-template-columns:minmax(0,1fr)}}
+.auth-card h2{font-size:26px;margin:4px 0 6px}
+.auth-card form{display:flex;flex-direction:column;gap:12px}
+.acct{display:flex;gap:12px;justify-content:space-between;align-items:center}
+
+/* upload + jobs */
+.drop{display:block;border:2px dashed var(--line);border-radius:14px;padding:26px 16px;text-align:center;cursor:pointer;background:var(--surface-2);transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop b{display:block;font-family:var(--font-display);font-size:17px}
+.drop span{font-size:13px;color:var(--muted)}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.drop:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.draft{border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px;background:var(--surface-2)}
+.draft-top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.fname{font-weight:600;overflow-wrap:anywhere}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.opts .wide{grid-column:1/-1}
+.draft-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+.price{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
+.price small{font-family:var(--font-body);font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
+.job{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);min-width:0}
+.job+.job{margin-top:10px}
+.job-top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+.job .meta{font-size:12.5px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.job .note-l{font-size:12.5px;margin-top:6px;font-weight:600}
+.n-print{color:var(--p-fg)}.n-done{color:var(--c-fg)}.n-bad{color:var(--d-fg)}
+.steps{display:flex;gap:4px;margin-top:12px}
+.steps i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.steps i.on{background:var(--accent)}
+.steps-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.colhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.colhead h3{font-size:16px}
+.count{background:var(--accent-soft);color:var(--accent);border-radius:999px;font-weight:700;font-size:12.5px;padding:2px 10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 12px;background:var(--surface-2);border-radius:10px;min-width:0}
+.row+.row{margin-top:8px}
+.row>span{min-width:0;overflow-wrap:anywhere}
+.log{list-style:none;margin:0;padding:0;max-height:340px;overflow:auto}
+.log li{padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+.log li:first-child{border-top:0}
+.log time{display:block;color:var(--muted);font-size:12px}
+
+/* profiles */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.pcard{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.pcard h3{font-size:17px}
+.pcard .muted{font-size:13px;overflow-wrap:anywhere}
+.quote{padding:12px 14px;background:var(--surface-2);border-radius:10px;font-style:italic;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.kv{display:grid;grid-template-columns:130px minmax(0,1fr);gap:6px 12px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.hcenter{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.camlabel{position:relative;display:inline-block}
+.camlabel .camb{position:absolute;right:-2px;bottom:-2px;background:var(--accent);color:var(--accent-ink);border-radius:50%;width:34px;height:34px;display:grid;place-items:center;cursor:pointer}
+.camlabel input{position:absolute;opacity:0;width:1px;height:1px}
+.camlabel:focus-within .camb{outline:2px solid var(--accent);outline-offset:2px}
+
+/* modal + toast */
+.overlay{position:fixed;inset:0;background:rgba(10,12,25,.55);display:grid;place-items:center;padding:16px;z-index:30}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:20px}
+.modal h3{font-size:20px;margin-bottom:12px;overflow-wrap:anywhere}
+.prev{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:10px;max-height:240px;overflow:auto;white-space:pre-wrap;font-family:var(--font-mono);font-size:12px;overflow-wrap:anywhere}
+.prev img{max-width:100%;display:block;margin:auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:40;max-width:calc(100vw - 32px);text-align:center}
+/* colour layer: print-process cyan, magenta and yellow around the indigo accent */
+body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 0% -8%,color-mix(in srgb,var(--cy-soft) 75%,transparent),transparent 62%),radial-gradient(820px 400px at 100% -8%,color-mix(in srgb,var(--mg-soft) 75%,transparent),transparent 62%);background-repeat:no-repeat}
+.bar{border-bottom:0}
+.bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--cy) 0 33.3%,var(--mg) 33.3% 66.6%,var(--yl) 66.6%)}
+.logo{background:linear-gradient(135deg,var(--cy) 0%,var(--accent) 58%,var(--mg) 135%);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 40%,transparent)}
+.btn.pri{box-shadow:0 2px 0 rgba(0,0,0,.16),0 8px 18px color-mix(in srgb,var(--accent) 32%,transparent)}
+.card>h3 .ic,.colhead h3 .ic{color:var(--accent)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.steps i.on{background:linear-gradient(90deg,var(--cy),var(--accent))}
+.count{background:var(--yl-soft);color:var(--yl-ink)}
+.tag{background:var(--cy-soft);color:var(--cy-ink)}
+.drop{border-color:color-mix(in srgb,var(--cy) 65%,transparent);background:linear-gradient(135deg,var(--cy-soft),var(--surface-2) 62%)}
+.drop:hover,.drop.over{border-color:var(--accent);background:linear-gradient(135deg,var(--accent-soft),var(--cy-soft))}
+.price{color:var(--accent)}
+
+/* dashboard banners, tinted by role: client cyan, shop yellow, admin magenta */
+.head{--role:var(--accent);--role-soft:var(--accent-soft);position:relative;overflow:hidden;background:linear-gradient(100deg,var(--surface) 38%,var(--role-soft));border:1px solid var(--line);border-radius:18px;padding:22px 24px}
+.head>*{position:relative;z-index:1}
+.head::after{content:"";position:absolute;right:0;top:0;bottom:0;width:48%;background-image:radial-gradient(var(--role) 1.5px,transparent 2px);background-size:12px 12px;opacity:.3;-webkit-mask-image:linear-gradient(90deg,transparent,#000);mask-image:linear-gradient(90deg,transparent,#000);pointer-events:none}
+.h-cy{--role:var(--cy);--role-soft:var(--cy-soft)}
+.h-yl{--role:var(--yl);--role-soft:var(--yl-soft)}
+.h-mg{--role:var(--mg);--role-soft:var(--mg-soft)}
+.rc-cy,.rc-yl,.rc-mg{display:inline-block;border-radius:999px;padding:3px 11px;margin-bottom:8px}
+.rc-cy{background:var(--cy-soft);color:var(--cy-ink)}
+.rc-yl{background:var(--yl-soft);color:var(--yl-ink)}
+.rc-mg{background:var(--mg-soft);color:var(--mg-ink)}
+
+/* stat tiles: icon bubbles cycle through the four colours */
+.stat>.ic{box-sizing:content-box;width:22px;height:22px;padding:10px;border-radius:12px}
+.stats .stat:nth-child(4n+1)>.ic{background:var(--cy-soft);color:var(--cy-ink)}
+.stats .stat:nth-child(4n+2)>.ic{background:var(--mg-soft);color:var(--mg-ink)}
+.stats .stat:nth-child(4n+3)>.ic{background:var(--yl-soft);color:var(--yl-ink)}
+.stats .stat:nth-child(4n+4)>.ic{background:var(--accent-soft);color:var(--accent)}
+
+/* landing */
+.hero{position:relative;overflow:hidden;border-radius:26px;border:1px solid var(--line);background:linear-gradient(160deg,var(--surface),var(--surface-2));padding:64px 20px 56px;margin-bottom:8px}
+.hero>*{position:relative;z-index:1}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(var(--mg) 1.4px,transparent 1.9px);background-size:14px 14px;opacity:.2;-webkit-mask-image:linear-gradient(115deg,#000,transparent 50%);mask-image:linear-gradient(115deg,#000,transparent 50%)}
+.hero::after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;right:-70px;top:-90px;background:var(--cy-soft);box-shadow:-150px 170px 0 -50px var(--yl-soft),-250px 30px 0 -105px var(--mg-soft)}
+.hl{background:linear-gradient(transparent 60%,var(--hl) 60% 92%,transparent 92%);padding-inline:4px}
+.feat .card:nth-child(1){background:linear-gradient(var(--cy-soft),var(--surface) 46%)}
+.feat .card:nth-child(2){background:linear-gradient(var(--yl-soft),var(--surface) 46%)}
+.feat .card:nth-child(3){background:linear-gradient(var(--mg-soft),var(--surface) 46%)}
+.feat h3{display:flex;align-items:center;gap:12px}
+.feat h3 .ic{box-sizing:content-box;width:24px;height:24px;padding:10px;border-radius:12px;background:var(--surface)}
+.feat .card:nth-child(1) h3 .ic{color:var(--cy-ink)}
+.feat .card:nth-child(2) h3 .ic{color:var(--yl-ink)}
+.feat .card:nth-child(3) h3 .ic{color:var(--mg-ink)}
+.feat ul li::before{color:var(--mg)}
+
+/* avatars take one of four tints from the first letter */
+.av0{background:var(--cy-soft);color:var(--cy-ink)}
+.av1{background:var(--mg-soft);color:var(--mg-ink)}
+.av2{background:var(--yl-soft);color:var(--yl-ink)}
+.av3{background:var(--accent-soft);color:var(--accent)}
+.brand h1 .h1-sub{font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--muted);margin-left:4px}
+.ok{margin:0;color:var(--c-fg);background:var(--c-bg);border-radius:8px;padding:8px 12px;font-size:13.5px}
+/* file preview sheet, workload strip, payment image */
+.sheet{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:14px;display:flex;justify-content:center}
+.paper{background:#fff;color:#14172b;border:1px solid #d8dbe8;box-shadow:0 4px 14px rgba(20,23,43,.15);width:100%;max-width:260px;padding:18px 16px;display:flex;flex-direction:column;gap:8px;aspect-ratio:210/297;overflow:hidden}
+.paper.land{max-width:340px;aspect-ratio:297/210}
+.paper b{font-family:var(--font-display);font-size:15px;overflow-wrap:anywhere}
+.paper small{font-size:11px;color:#5b6078}
+.paper i{display:block;height:6px;border-radius:3px;background:#e3e6f2}
+.paper i.s{width:70%}.paper i.m{width:88%}
+.paper.col i:nth-of-type(3n+1){background:#d3f2fa}.paper.col i:nth-of-type(3n+2){background:#fddcec}.paper.col i:nth-of-type(3n){background:#fff0bf}
+.prev iframe,.prev embed{width:100%;height:320px;border:0;display:block;background:#fff}
+.prev a{font-family:var(--font-body)}
+.work{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--yl-soft);color:var(--yl-ink);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13.5px;font-weight:600}
+.payimg{display:block;max-width:100%;max-height:360px;margin:12px auto 0;border:1px solid var(--line);border-radius:12px;background:#fff}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.mhead{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.mhead b{font-family:var(--font-display);font-size:17px;display:block;line-height:1.1}
+.mhead small{color:var(--muted);font-size:12px}
+.printbox{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:14px}
+.printbox h4{font-family:var(--font-display);font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.printbox p{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.printbox ul{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;font-size:13px}
+.printbox li span{color:var(--muted)}
+@media(max-width:520px){.printbox ul{grid-template-columns:minmax(0,1fr)}}
+#printRoot{display:none}
+.prev.doc{white-space:normal;font-family:var(--font-body);background:#fff;color:#14172b;max-height:440px;padding:20px 22px}
+.docx{font:14px/1.5 Calibri,Arial,sans-serif;color:#14172b;overflow-wrap:anywhere}
+.docx p{margin:0 0 .6em}.docx p:empty{min-height:1em}
+.docx h1{font-size:1.7em;margin:.5em 0 .3em}.docx h2{font-size:1.4em;margin:.5em 0 .3em}.docx h3{font-size:1.2em;margin:.5em 0 .3em}.docx h4,.docx h5,.docx h6{font-size:1.05em;margin:.5em 0 .3em}
+.docx ul,.docx ol{margin:0 0 .6em;padding-left:1.6em}
+.docx table{border-collapse:collapse;width:100%;margin:.6em 0}.docx td,.docx th{border:1px solid #b9bfd2;padding:4px 7px;vertical-align:top}
+.docx img{max-width:100%;height:auto}
+.docx hr.pb{border:0;border-top:1px dashed #aab1c8;margin:1.1em 0}
+.fnote{font-size:12.5px;color:var(--muted);margin:8px 0 0;text-align:center}
+.fnote a{font-weight:600}
+@media print{
+  body>*:not(#printRoot){display:none!important}
+  html,body{background:#fff!important}
+  #printRoot{display:block!important;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printRoot>img{display:block;max-width:100%;max-height:100vh;margin:0 auto;object-fit:contain;page-break-inside:avoid}
+  #printRoot .docx{font:11pt/1.4 Calibri,Arial,sans-serif;color:#000}
+  #printRoot .docx hr.pb{border:0;margin:0;page-break-after:always}
+  #printRoot .docx tr,#printRoot .docx img{page-break-inside:avoid}
+  #printRoot pre{white-space:pre-wrap;font:12pt/1.45 'Courier New',monospace;margin:0}
+  #printRoot.bw{filter:grayscale(1)}
+  #printRoot .pl{display:flex;align-items:center;gap:10px;margin-bottom:14px;font:700 16pt sans-serif}
+  #printRoot .pl i{display:inline-block;width:34px;height:34px;border-radius:9px;background:#3a45d6}
+  #printRoot .pt{font:700 18pt sans-serif;margin:0 0 6px}
+  #printRoot .ps{font:11pt sans-serif;color:#444;margin:0 0 16px}
+  #printRoot .pr{height:10px;border-radius:5px;background:#e3e6f2;margin:0 0 12px}
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="bar">
+    <button class="brand" data-act="go" data-p="home" aria-label="PrintEase home">
+      <span class="logo" aria-hidden="true"><svg class="ic lg" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg></span>
+      <span><h1>PrintEase</h1><p>A Printing System, to Ease Your Hustle on waiting in Line</p></span>
+    </button>
+    <div class="nav" id="nav"></div>
+  </header>
+  <main id="view"></main>
+  <p class="footnote" hidden>Sample data and sample rates. Sign-in, payments and email are simulated in this page. <button class="link" data-act="reset">Reset sample data</button></p>
+</div>
+<div id="modal"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+  var KEY='printease.v4';
+  var ST={pending:'Pending',queued:'Queued',printing:'Printing',completed:'Completed',declined:'Declined'};
+  var BASE_RATE=5;
+  var IC={
+    printer:'<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+    file:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+    upload:'<path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 20h16"/>',
+    users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7"/><path d="M18 14c2.5.6 4 2.6 4 6"/>',
+    shield:'<path d="M12 3 4 6v6c0 4.5 3.2 7.8 8 9 4.8-1.2 8-4.5 8-9V6z"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    check:'<circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8L16 9.5"/>',
+    alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><path d="M12 16.5v.01"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    logout:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="m16 8 4 4-4 4"/><path d="M20 12H9"/>',
+    user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/>',
+    eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    trash:'<path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="m6 7 1 13h10l1-13"/>',
+    bell:'<path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    back:'<path d="M19 12H5"/><path d="m11 6-6 6 6 6"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+    card:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>',
+    trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+    activity:'<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    chart:'<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M3 20h18"/>',
+    save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 20v-6h8v6"/>'
+  };
+  function ic(n,c){return '<svg class="ic '+(c||'')+'" viewBox="0 0 24 24" aria-hidden="true">'+IC[n]+'</svg>'}
+
+  /* ---------- data ---------- */
+  function ago(m){return Date.now()-m*60000}
+  function seed(){
+    var accounts=[
+      {id:'c1',name:'Maria Santos',email:'maria.santos@example.com',pw:'customer123',type:'client',quote:'',img:'',sample:true},
+      {id:'s1',name:'CHaSS Building Print Shop',email:'library.shop@example.com',pw:'shop1234',type:'shop',quote:'Fast, clean prints for every student.',img:'',sample:true},
+      {id:'s2',name:'NSB Building Print Shop',email:'engg.shop@example.com',pw:'shop5678',type:'shop',quote:'',img:'',sample:true},
+      {id:'a1',name:'PrintEase Admin',email:'admin@example.com',pw:'admin1234',type:'admin',quote:'',img:'',sample:true},
+      {id:'c2',name:'Jerome Dela Cruz',email:'jerome.dc@example.com',pw:'sample1234',type:'client',quote:'Print first, panic later.',img:''},
+      {id:'c3',name:'Angelica Rosal',email:'angelica.r@example.com',pw:'sample1234',type:'client',quote:'',img:''},
+      {id:'c4',name:'Kristine Lim',email:'kristine.l@example.com',pw:'sample1234',type:'client',quote:'',img:''},
+      {id:'c5',name:'Prof. R. Gonzales',email:'r.gonzales@example.com',pw:'sample1234',type:'client',quote:'',img:''}
+    ];
+    function j(id,name,owner,pages,copies,color,paper,shop,status,min,sides,done){
+      return {id:id,name:name,ownerId:owner,size:pages*60000,type:'application/pdf',pages:pages,copies:copies,paper:paper,color:color,sides:sides||'single',orient:'portrait',notes:'',shop:shop,skip:[],status:status,t:ago(min),doneAt:done?ago(done):0};
+    }
+    var jobs=[
+      j('PE-0001','Lab_Report_Physics2.pdf','c2',12,2,'bw','A4','s1','pending',14),
+      j('PE-0002','OJT_Certificate_Scan.pdf','c3',2,5,'color','Letter','s2','pending',22),
+      j('PE-0003','Poster_Nutrition_Month.pdf','c4',1,3,'color','A3','s1','printing',41),
+      j('PE-0004','Syllabus_ITEC105.docx','c5',6,40,'bw','A4','s2','queued',55,'double'),
+      j('PE-0005','Enrollment_Form.pdf','c1',3,1,'bw','Letter','s1','completed',90,'single',30),
+      j('PE-0006','Capstone_Proposal_v2.pdf','c1',30,2,'bw','A4','any','pending',9,'double')
+    ];
+    var notes=[{id:1,to:'c1',job:'PE-0005',text:'Enrollment_Form.pdf is complete and ready for pickup at CHaSS Building Print Shop. Show ticket PE-0005.',t:ago(30),read:false,email:'maria.santos@example.com'}];
+    accounts.forEach(function(a){if(a.sample)a.pw0=a.pw});
+    return {v:3,accounts:accounts,jobs:jobs,notes:notes,seq:6,nseq:2,userId:null};
+  }
+  var D;
+  function load(){
+    try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.v===3&&o.accounts&&o.jobs)return o}}catch(e){}
+    return seed();
+  }
+  function persist(){
+    try{
+      var o={v:3,accounts:D.accounts,jobs:D.jobs.map(function(x){var c={};for(var k in x)if(k!=='preview')c[k]=x[k];return c}),notes:D.notes,seq:D.seq,nseq:D.nseq,userId:D.userId};
+      localStorage.setItem(KEY,JSON.stringify(o));
+    }catch(e){}
+  }
+  D=load();
+  var S={page:D.userId?'dashboard':'home',tab:{client:'upload',shop:'queue',admin:'all'},drafts:[],bell:false,modal:null,err:'',vals:{name:'',email:'',type:'client'},
+    shopQ:'',shopF:'all',adminQ:'',adminF:'all',profQ:'',profTab:'clients',viewId:null,editing:false,pf:null,paying:false,pwMsg:null};
+  S.drafts=[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];
+
+  /* ---------- helpers ---------- */
+  function $(s,r){return (r||document).querySelector(s)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function tz(o){o.timeZone='Asia/Manila';return o}
+  function fmtT(t){try{return new Date(t).toLocaleString('en-PH',tz({month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}catch(e){return ''}}
+  function fmtD(t){try{return new Date(t).toLocaleDateString('en-PH',tz({month:'short',day:'numeric',year:'numeric'}))}catch(e){return ''}}
+  function fmtSize(b){return b>1e6?(b/1e6).toFixed(1)+' MB':Math.max(1,Math.round(b/1e3))+' KB'}
+  function peso(n){return '₱'+n.toLocaleString('en-PH')}
+  function rateOf(shopId){var a=shopId&&shopId!=='any'?acct(shopId):null;var r=a&&a.type==='shop'?Number(a.rate):NaN;return r>0?r:BASE_RATE}
+  function cost(o){var r=o.rate>0?o.rate:rateOf(o.shop);return o.pages*o.copies*r*(o.paper==='A3'?2:1)}
+  function priceNote(d){var r=rateOf(d.shop);return d.shop==='any'?'Base rate ₱'+BASE_RATE+' per page. The shop that accepts your file sets the final rate.':'₱'+r+' per page'}
+  function acct(id){return D.accounts.filter(function(a){return a.id===id})[0]}
+  function me(){return D.userId?acct(D.userId):null}
+  function shops(){return D.accounts.filter(function(a){return a.type==='shop'})}
+  function shopName(id){if(id==='any')return 'Any available shop';var a=acct(id);return a?a.name:'Unknown shop'}
+  function ownerName(j){var a=acct(j.ownerId);return a?a.name:'Unknown'}
+  function pill(s){return '<span class="pill s-'+s+'">'+ST[s]+'</span>'}
+  function opt(v,l,cur){return '<option value="'+esc(v)+'"'+(String(cur)===String(v)?' selected':'')+'>'+esc(l)+'</option>'}
+  function pad(n){return ('0000'+n).slice(-4)}
+  function initial(a){return esc((a.name||'?').charAt(0).toUpperCase())}
+  function avatar(a,size){return '<span class="avatar '+size+' av'+((a.name||'?').charCodeAt(0)%4)+'">'+(a.img?'<img src="'+esc(a.img)+'" alt="">':initial(a))+'</span>'}
+  var TYPE_L={client:'Client',shop:'Print shop',admin:'Admin'};
+  function jobsFor(f){return D.jobs.filter(f).sort(function(a,b){return b.t-a.t})}
+  var toastT;
+  function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3400)}
+
+  /* ---------- notifications and status flow ---------- */
+  function notify(j,text,email){D.notes.unshift({id:D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false,email:email||''})}
+  function setStatus(j,s){
+    var sh=me(),shn=sh?sh.name:shopName(j.shop),o=acct(j.ownerId),first=o?o.name.split(' ')[0]:'Owner';
+    if(s==='queued'){if(j.shop==='any')j.shop=sh.id;j.rate=rateOf(j.shop);notify(j,j.name+' was accepted by '+shn+' and is queued. Payment first is required. Check the shop\'s profile.')}
+    if(s==='printing')notify(j,j.name+' is now printing at '+shn+'.');
+    if(s==='completed'){j.doneAt=Date.now();notify(j,j.name+' is complete and ready for pickup at '+shn+'. Show ticket '+j.id+'.',o?o.email:'')}
+    if(s==='declined')notify(j,j.name+' was declined by '+shn+'. Check the file and send it again.');
+    j.status=s;
+    toast(s==='completed'?first+' notified in the app and by email':first+' notified: '+ST[s].toLowerCase());
+  }
+
+  /* ---------- top bar ---------- */
+  function renderNav(){
+    var u=me(),h='';
+    if(!u){
+      h='<button class="btn ghost" data-act="go" data-p="login">Login</button><button class="btn pri" data-act="go" data-p="signup">Sign Up</button>';
+    }else{
+      if(u.type==='client'){
+        var unread=D.notes.filter(function(n){return n.to===u.id&&!n.read}).length;
+        h+='<div class="relwrap"><button class="bell" data-act="bell" aria-label="Notifications, '+unread+' unread" aria-expanded="'+S.bell+'">'+ic('bell')+(unread?'<span class="dot">'+unread+'</span>':'')+'</button>'+(S.bell?notePanel(u):'')+'</div>';
+      }
+      h+='<div class="chip">'+avatar(u,'sm')+'<span class="chip-t"><b>'+esc(u.name)+'</b><small>'+TYPE_L[u.type]+' account</small></span></div>';
+      if(S.page!=='dashboard')h+='<button class="btn ghost sm" data-act="go" data-p="dashboard">Dashboard</button>';
+      if(u.type!=='admin')h+='<button class="btn ghost sm" data-act="go" data-p="profiles">'+ic('users','sm')+'View Profiles</button>';
+      h+='<button class="btn ghost sm" data-act="go" data-p="profile">'+ic('user','sm')+'Profile</button><button class="btn sm" data-act="logout">'+ic('logout','sm')+'Logout</button>';
+    }
+    $('#nav').innerHTML=h;
+  }
+  function notePanel(u){
+    var m=D.notes.filter(function(n){return n.to===u.id}).slice(0,8);
+    return '<div class="panel" role="dialog" aria-label="Notifications"><h3>Notifications</h3>'+(m.length?m.map(function(n){return '<div class="note'+(n.read?'':' unread')+'"><div>'+esc(n.text)+(n.email?'<br><span class="muted">Email sent to '+esc(n.email)+'</span>':'')+'<time>'+fmtT(n.t)+'</time></div></div>'}).join(''):'<div class="empty">No notifications yet.</div>')+'</div>';
+  }
+
+  /* ---------- pages ---------- */
+  function pgHome(){
+    var f=function(icn,t,d,l){return '<section class="card"><h3>'+ic(icn,'lg')+' '+t+'</h3><p class="sub" style="margin-bottom:0">'+d+'</p><ul>'+l.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ul></section>'};
+    return '<section class="hero"><h2>PrintEase a Printing <span class="hl">Management</span> System</h2><p>Streamline your printing workflow with one platform for clients and printing shops, with an admin overseeing the whole queue.</p><button class="btn pri lg" data-act="go" data-p="signup">Get Started Today</button></section>'+
+      '<h3 class="section-h">Choose Your Dashboard</h3><div class="feat">'+
+      f('upload','Client Dashboard','Upload files, manage print jobs, and track your orders',['Upload and manage files','Specify copies and paper size','Track print job status','Private file management'])+
+      f('printer','Shop Dashboard','View the print queue and manage completed jobs',['View client print requests','Accept files and manage the queue','Notify owners when printing and when ready','Track completed orders'])+
+      f('shield','Admin Dashboard','Complete oversight of all system activities',['Monitor all user activities','View system-wide statistics','Direct queued files to a shop','Complete system oversight'])+'</div>';
+  }
+
+  function pwField(id,label,ph,ac){return '<label class="field">'+label+'<span class="pw"><input id="'+id+'" type="password" placeholder="'+ph+'" autocomplete="'+ac+'"><button type="button" data-act="togglepw" data-t="'+id+'" aria-label="Show or hide password">Show</button></span></label>'}
+  function pgAuth(up){
+    var v=S.vals;
+    var form='<section class="card auth-card"><div class="eyebrow">Printing System</div><h2>'+(up?'Create Account':'Welcome Back')+'</h2><p class="sub">'+(up?'Join PrintEase and start managing your printing needs.':'Sign in to your PrintEase account.')+'</p><form id="authForm" novalidate>';
+    if(up)form+='<label class="field">Full name or shop name<input id="au-name" autocomplete="name" placeholder="Enter your name" value="'+esc(v.name)+'"></label>';
+    form+='<label class="field">Email<input id="au-email" type="email" autocomplete="username" placeholder="Enter your email" value="'+esc(v.email)+'"></label>';
+    if(up)form+='<label class="field">Account type<select id="au-type">'+opt('client','Client: upload and manage print jobs',v.type)+opt('shop','Print shop: process print requests',v.type)+'</select></label>';
+    form+=pwField('au-pw','Password',up?'Create a password':'Enter your password',up?'new-password':'current-password');
+    if(up)form+=pwField('au-pw2','Confirm password','Confirm your password','new-password');
+    if(S.err)form+='<p class="err" role="alert">'+esc(S.err)+'</p>';
+    form+='<button class="btn pri full" type="submit">'+(up?'Create Account':'Sign In')+'</button></form><p class="sub" style="margin:14px 0 0">'+(up?'Already have an account? <button class="link" data-act="go" data-p="login">Sign in</button>':"Don't have an account? "+'<button class="link" data-act="go" data-p="signup">Sign up</button>')+'</p></section>';
+    var side='';/* sample accounts panel kept in code, not shown */ var sideSample=up?'':'<section class="card"><h3>Sample accounts</h3><p class="sub">Pick one to open its dashboard. These passwords are samples only.</p>'+D.accounts.filter(function(a){return a.sample}).map(function(a){var ch=a.pw0!==undefined&&a.pw!==a.pw0;return '<div class="job acct"><div style="min-width:0"><div class="fname">'+esc(a.name)+'</div><div class="meta">'+TYPE_L[a.type]+' account<br><span class="mono">'+esc(a.email)+'</span><br>'+(ch?'<span class="muted">Password was changed. Sign in with the new one.</span>':'<span class="mono">'+esc(a.pw)+'</span>')+'</div></div>'+(ch?'':'<button class="btn sm pri" data-act="quick" data-id="'+a.id+'">Use account</button>')+'</div>'}).join('')+'</section>';
+    return '<button class="btn ghost back" data-act="go" data-p="home">'+ic('back','sm')+'Back to Home</button><div class="authwrap"><div class="authbox">'+form+side+'</div></div>';
+  }
+
+  /* --- job rows --- */
+  function jobCard(j,o){
+    o=o||{};
+    var meta='<span class="mono">'+j.id+'</span>'+(o.owner?' · '+ic('user','sm')+' '+esc(ownerName(j)):'')+(o.email&&acct(j.ownerId)?' · '+esc(acct(j.ownerId).email):'')+' · '+j.copies+' copies · '+j.paper+' · '+(j.color==='bw'?'B&W':'Colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+fmtD(j.t)+(o.shop?'<br>'+esc(shopName(j.shop)):'')+(o.price?' · '+peso(cost(j)):'');
+    var st='';
+    if(j.status==='printing')st='<div class="note-l n-print">Currently printing…</div>';
+    if(j.status==='completed')st='<div class="note-l n-done">Completed on '+fmtD(j.doneAt||j.t)+', ready for pickup</div>';
+    if(j.status==='declined')st='<div class="note-l n-bad">Declined by the shop. Delete it and upload again.</div>';
+    if(j.notes&&o.owner)st+='<div class="meta">Note: '+esc(j.notes)+'</div>';
+    return '<div class="job"><div class="job-top"><div style="min-width:0"><div class="fname">'+esc(j.name)+'</div><div class="meta">'+meta+'</div>'+st+'</div>'+pill(j.status)+'</div>'+(o.steps?stepBar(j):'')+(o.actions?'<div class="actions">'+o.actions+'</div>':'')+'</div>';
+  }
+  function stepBar(j){
+    if(j.status==='declined')return '';
+    var order=['pending','queued','printing','completed'],i=order.indexOf(j.status),h='<div class="steps">';
+    order.forEach(function(_,k){h+='<i class="'+(k<=i?'on':'')+'"></i>'});
+    return h+'</div><div class="steps-l"><span>Pending</span><span>Queued</span><span>Printing</span><span>Completed</span></div>';
+  }
+  function emptyBox(icn,t,s){return '<div class="empty">'+ic(icn,'xl')+'<div>'+t+'</div>'+(s?'<div style="font-size:13px">'+s+'</div>':'')+'</div>'}
+
+  /* --- client --- */
+  function myDrafts(){return S.drafts.filter(function(d){return d.ownerId===D.userId})}
+  function draftCard(d){
+    var so=opt('any','Any available shop',d.shop)+shops().map(function(s){return opt(s.id,s.name+' · ₱'+rateOf(s.id)+' per page',d.shop)}).join('');
+    return '<div class="draft" data-draft="'+d.id+'"><div class="draft-top"><div><div class="fname">'+esc(d.name)+'</div><div class="muted" style="font-size:12.5px">'+fmtSize(d.size)+(d.sample?' · sample file':'')+'</div></div><button class="btn sm bad" data-act="rmdraft" data-id="'+d.id+'">Remove</button></div><div class="opts">'+
+      '<label class="field">Paper size<select data-f="paper">'+opt('A4','A4 (210 × 297 mm)',d.paper)+opt('A3','A3 (297 × 420 mm)',d.paper)+opt('Letter','Letter (8.5 × 11 in)',d.paper)+opt('Legal','Legal (8.5 × 14 in)',d.paper)+'</select></label>'+
+      '<label class="field">Colour<select data-f="color">'+opt('bw','Black & white',d.color)+opt('color','Full colour',d.color)+'</select></label>'+
+      '<label class="field">Sides<select data-f="sides">'+opt('single','One-sided',d.sides)+opt('double','Two-sided',d.sides)+'</select></label>'+
+      '<label class="field">Orientation<select data-f="orient">'+opt('portrait','Portrait',d.orient)+opt('landscape','Landscape',d.orient)+'</select></label>'+
+      '<label class="field">Pages<input type="number" min="1" max="999" data-f="pages" value="'+d.pages+'"></label>'+
+      '<label class="field">Number of copies<input type="number" min="1" max="100" data-f="copies" value="'+d.copies+'"></label>'+
+      '<label class="field wide">Print shop<select data-f="shop">'+so+'</select></label>'+
+      '<label class="field wide">Notes for the shop<textarea rows="2" data-f="notes" placeholder="Stapling, binding, page range">'+esc(d.notes)+'</textarea></label></div>'+
+      '<div class="draft-foot"><div class="price" data-price>'+peso(cost(d))+'<small>'+priceNote(d)+'</small></div><button class="btn pri" data-act="queue" data-id="'+d.id+'">Submit Print Job</button></div></div>';
+  }
+  function pgClient(){
+    var u=me(),m=jobsFor(function(j){return j.ownerId===u.id});
+    var c=function(s){return m.filter(function(j){return j.status===s}).length};
+    var h='<div class="head h-cy"><div><div class="eyebrow rc-cy">Client</div><h2>Client Dashboard</h2><p>Welcome back, '+esc(u.name)+'. Upload a file, set how it should print, and follow it until pickup.</p></div></div>';
+    h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+(c('pending')+c('queued'))+'</b><span>Waiting in queue</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing now</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Ready for pickup</span></div></div><div class="stat">'+ic('file','lg')+'<div><b>'+myDrafts().length+'</b><span>Drafts to submit</span></div></div></div>';
+    h+='<div class="seg" role="group" aria-label="Sections"><button data-act="tab" data-r="client" data-t="upload" aria-pressed="'+(S.tab.client==='upload')+'">Upload Files</button><button data-act="tab" data-r="client" data-t="jobs" aria-pressed="'+(S.tab.client==='jobs')+'">My Print Jobs ('+m.length+')</button></div>';
+    if(S.tab.client==='upload'){
+      h+='<section class="card"><h3>'+ic('upload')+' Upload New File</h3><p class="sub">Upload your files and specify printing requirements. PDF, DOC, DOCX, JPG, PNG or TXT.</p><label class="drop" id="drop"><input type="file" id="fileIn" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt"><b>Drop files here or choose from your device</b><span>Page counts are estimates. Correct them before submitting.</span></label><div>'+myDrafts().map(draftCard).join('')+'</div></section>';
+    }else{
+      h+='<section class="card"><h3>'+ic('file')+' My Print Jobs</h3><p class="sub">Track the status of your submitted print jobs. Newest first.</p>';
+      h+=m.length?m.map(function(j){
+        var a=(j.status==='pending'||j.status==='declined')?'<button class="btn sm bad" data-act="deljob" data-id="'+j.id+'">'+ic('trash','sm')+'Delete</button>':'';
+        if(j.status==='completed')a='<span class="tag">Show ticket '+j.id+' at the counter</span>';
+        return jobCard(j,{shop:true,price:true,steps:true,actions:a});
+      }).join(''):emptyBox('file','No print jobs yet','Upload your first file to get started');
+      h+='</section>';
+    }
+    return h;
+  }
+
+  /* --- shop --- */
+  function shopJobs(u){return D.jobs.filter(function(j){return (j.shop===u.id||j.shop==='any')&&(j.skip||[]).indexOf(u.id)<0&&j.status!=='declined'})}
+  function matchQ(j,q,f){
+    if(f!=='all'&&j.status!==f)return false;
+    if(!q)return true;
+    var a=acct(j.ownerId);q=q.toLowerCase();
+    return (j.name+' '+(a?a.name+' '+a.email:'')+' '+j.id).toLowerCase().indexOf(q)>-1;
+  }
+  function filterBar(idq,idf,q,f,ph){
+    return '<section class="card" style="margin-bottom:18px"><div class="toolbar"><input id="'+idq+'" type="search" placeholder="'+ph+'" value="'+esc(q)+'" aria-label="Search"><select id="'+idf+'" aria-label="Status filter">'+opt('all','All status',f)+Object.keys(ST).map(function(k){return opt(k,ST[k],f)}).join('')+'</select></div></section>';
+  }
+  function pgShop(){
+    var u=me(),all=shopJobs(u);
+    var c=function(s){return all.filter(function(j){return j.status===s}).length};
+    var list=all.filter(function(j){return matchQ(j,S.shopQ,S.shopF)}).sort(function(a,b){return a.t-b.t});
+    var queue=list.filter(function(j){return j.status==='pending'}),mineQ=list.filter(function(j){return j.shop===u.id&&(j.status==='queued'||j.status==='printing')}),done=list.filter(function(j){return j.status==='completed'}).sort(function(a,b){return (b.doneAt||0)-(a.doneAt||0)});
+    var h='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>Shop Dashboard</h2><p>Welcome back, '+esc(u.name)+'. Accept the files you want to print. The owner is notified when printing starts and again when the job is ready for pickup.</p></div></div>';
+    h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+c('pending')+'</b><span>Pending</span></div></div><div class="stat">'+ic('alert','lg')+'<div><b>'+c('queued')+'</b><span>Queued</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div></div>';
+    h+=filterBar('shopQ','shopF',S.shopQ,S.shopF,'Search by file name, client name or email');
+    h+='<div class="seg" role="group" aria-label="Sections"><button data-act="tab" data-r="shop" data-t="queue" aria-pressed="'+(S.tab.shop==='queue')+'">Print Queue ('+queue.length+')</button><button data-act="tab" data-r="shop" data-t="mine" aria-pressed="'+(S.tab.shop==='mine')+'">Queued ('+mineQ.length+')</button><button data-act="tab" data-r="shop" data-t="completed" aria-pressed="'+(S.tab.shop==='completed')+'">Completed ('+done.length+')</button></div>';
+    if(S.tab.shop==='queue'){
+      h+='<section class="card"><h3>'+ic('alert')+' Print Queue</h3><p class="sub">Manage incoming print requests from clients. Files marked Any shop go to whoever accepts first.</p>';
+      h+=queue.length?queue.map(function(j){
+        var a='<button class="btn sm" data-act="view" data-id="'+j.id+'">'+ic('eye','sm')+'Preview file</button>';
+        a+='<button class="btn pri sm" data-act="st" data-s="queued" data-id="'+j.id+'">Accept and queue</button><button class="btn sm bad" data-act="decline" data-id="'+j.id+'">Decline</button>';
+        return jobCard(j,{owner:true,price:true,shop:j.shop==='any',actions:a});
+      }).join(''):emptyBox('printer','No jobs in queue','New print requests will appear here');
+      h+='</section>';
+    }else if(S.tab.shop==='mine'){
+      var pg=0;mineQ.forEach(function(j){pg+=j.pages*j.copies});
+      h+='<section class="card"><h3>'+ic('clock')+' Queued</h3><p class="sub">Jobs you accepted from the Print Queue. Work through them in order, oldest first.</p>';
+      h+='<div class="work"><span>'+mineQ.length+' job'+(mineQ.length===1?'':'s')+' in your workload</span><span>'+pg+' pages to print</span><span>'+mineQ.filter(function(j){return j.status==='printing'}).length+' printing now</span></div>';
+      h+=mineQ.length?mineQ.map(function(j){
+        var a='<button class="btn sm" data-act="view" data-id="'+j.id+'">'+ic('eye','sm')+'Preview file</button>';
+        if(j.status==='queued')a+='<button class="btn pri sm" data-act="st" data-s="printing" data-id="'+j.id+'">Start printing</button>';
+        if(j.status==='printing')a+='<button class="btn pri sm" data-act="st" data-s="completed" data-id="'+j.id+'">Mark complete</button>';
+        return jobCard(j,{owner:true,price:true,steps:true,actions:a});
+      }).join(''):emptyBox('clock','Nothing queued yet','Accept a request from the Print Queue and it will show up here');
+      h+='</section>';
+    }else{
+      h+='<section class="card"><h3>'+ic('check')+' Completed Jobs</h3><p class="sub">Finished jobs waiting for pickup.</p>';
+      h+=done.length?done.map(function(j){return jobCard(j,{owner:true,price:true,actions:'<button class="btn sm" data-act="view" data-id="'+j.id+'">'+ic('eye','sm')+'View file</button>'})}).join(''):emptyBox('check','No completed jobs yet','Completed jobs will appear here');
+      h+='</section>';
+    }
+    return h;
+  }
+
+  /* --- admin --- */
+  function pgAdmin(){
+    var u=me(),J=D.jobs,c=function(s){return J.filter(function(j){return j.status===s}).length};
+    var rate=J.length?Math.round(c('completed')/J.length*100):0;
+    var uniq={};J.forEach(function(j){uniq[j.ownerId]=1});
+    var h='<div class="head h-mg"><div><div class="eyebrow rc-mg">Admin</div><h2>Admin Dashboard</h2><p>System overview and management. See every file, check what is waiting at each shop and send pending files to a different shop.</p></div></div>';
+    h+='<div class="stats"><div class="stat">'+ic('file','lg')+'<div><b>'+J.length+'</b><span>Total jobs</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div><div class="stat">'+ic('users','lg')+'<div><b>'+D.accounts.length+'</b><span>Total users</span></div></div><div class="stat">'+ic('trend','lg')+'<div><b>'+rate+'%</b><span>Completion rate</span></div></div></div>';
+    var br=function(icn,l,n,cls){return '<div class="row"><span>'+ic(icn,'sm')+' '+l+'</span><span class="pill '+cls+'">'+n+'</span></div>'};
+    h+='<div class="grid2" style="margin-bottom:18px"><section class="card"><h3>'+ic('chart')+' Job Status Breakdown</h3><p class="sub">All print jobs in the system.</p>'+br('clock','Pending',c('pending'),'s-pending')+br('alert','Queued',c('queued'),'s-queued')+br('printer','Printing',c('printing'),'s-printing')+br('check','Completed',c('completed'),'s-completed')+br('alert','Declined',c('declined'),'s-declined')+'</section>';
+    var nCl=D.accounts.filter(function(a){return a.type==='client'}).length;
+    h+='<section class="card"><h3>'+ic('activity')+' User Activity</h3><p class="sub">Accounts by type.</p>'+br('user','Clients with jobs',Object.keys(uniq).length+' of '+nCl,'s-pending')+br('printer','Print shops',shops().length,'s-printing')+br('shield','Administrators',D.accounts.filter(function(a){return a.type==='admin'}).length,'s-queued')+'</section></div>';
+    h+='<div class="grid2" style="margin-bottom:18px"><section class="card"><h3>Pending files by shop</h3><p class="sub">Files waiting for a shop to accept them.</p>';
+    var groups=[{id:'any',name:'Any available shop'}].concat(shops());
+    groups.forEach(function(g){
+      var q=J.filter(function(j){return j.status==='pending'&&j.shop===g.id});
+      h+='<div class="colhead" style="margin-top:6px"><h3>'+esc(g.name)+'</h3><span class="count">'+q.length+'</span></div>';
+      h+=q.length?q.map(function(j){return '<div class="job"><div class="job-top"><div style="min-width:0"><div class="fname">'+esc(j.name)+'</div><div class="meta"><span class="mono">'+j.id+'</span> · '+esc(ownerName(j))+' · '+j.pages+' pg × '+j.copies+'</div></div>'+pill(j.status)+'</div><div class="actions"><label class="muted" style="font-size:12.5px" for="mv-'+j.id+'">Send to</label><select id="mv-'+j.id+'" data-move="'+j.id+'">'+opt('any','Any available shop',j.shop)+shops().map(function(s){return opt(s.id,s.name,j.shop)}).join('')+'</select></div></div>'}).join(''):'<div class="empty" style="padding:14px">No pending files here.</div>';
+    });
+    h+='</section><section class="card"><h3>Notifications sent</h3><p class="sub">Messages delivered to file owners.</p><ul class="log">'+(D.notes.length?D.notes.slice(0,12).map(function(n){var a=acct(n.to);return '<li><b>'+esc(a?a.name:'Unknown')+'</b> · <span class="mono">'+n.job+'</span><br>'+esc(n.text)+(n.email?'<br><span class="muted">Email sent to '+esc(n.email)+'</span>':'')+'<time>'+fmtT(n.t)+'</time></li>'}).join(''):'<li class="muted">None yet.</li>')+'</ul></section></div>';
+    var list=J.filter(function(j){return matchQ(j,S.adminQ,S.adminF)}).sort(function(a,b){return b.t-a.t});
+    h+=filterBar('adminQ','adminF',S.adminQ,S.adminF,'Search all jobs by file name, client name or email');
+    h+='<div class="seg" role="group" aria-label="Sections"><button data-act="tab" data-r="admin" data-t="all" aria-pressed="'+(S.tab.admin==='all')+'">All Jobs ('+list.length+')</button><button data-act="tab" data-r="admin" data-t="recent" aria-pressed="'+(S.tab.admin==='recent')+'">Recent Activity</button></div>';
+    var shown=S.tab.admin==='all'?list:J.slice().sort(function(a,b){return b.t-a.t}).slice(0,5);
+    h+='<section class="card"><h3>'+(S.tab.admin==='all'?ic('file')+' All Print Jobs':ic('activity')+' Recent Activity')+'</h3><p class="sub">'+(S.tab.admin==='all'?'Complete overview of all print jobs in the system.':'The latest five print jobs.')+'</p>';
+    h+=shown.length?shown.map(function(j){return jobCard(j,{owner:true,email:true,shop:true,price:true})}).join(''):emptyBox('file','No jobs found','Try adjusting your search or filter criteria');
+    return h+'</section>';
+  }
+
+  /* --- profile pages --- */
+  function pgProfile(){
+    var u=me();
+    if(!S.pf)S.pf={name:u.name,email:u.email,quote:u.quote||'',img:u.img||''};
+    var p=S.pf,view={name:S.editing?p.name:u.name,img:S.editing?p.img:u.img};
+    var h='<button class="btn ghost back" data-act="go" data-p="dashboard">'+ic('back','sm')+'Back to Dashboard</button><div class="narrow stack" style="max-width:660px"><section class="card"><div class="hcenter">';
+    h+=S.editing?'<label class="camlabel">'+avatar(view,'xl')+'<span class="camb">'+ic('camera','sm')+'</span><input type="file" id="pfImg" accept="image/*" aria-label="Change profile photo"></label>':avatar(view,'xl');
+    h+='<div><h2 style="font-size:26px">'+esc(u.name)+'</h2><p class="muted" style="margin:4px 0 0;font-size:14px">Manage your profile information and preferences</p></div></div><div style="margin-top:20px">';
+    if(!S.editing){
+      h+='<dl class="kv" style="margin-bottom:16px"><dt>Full name</dt><dd>'+esc(u.name)+'</dd><dt>Email address</dt><dd>'+esc(u.email)+'</dd><dt>Account type</dt><dd><span class="tag">'+TYPE_L[u.type]+'</span></dd></dl>';
+      h+=u.quote?'<div class="quote">“'+esc(u.quote)+'”</div>':'<div class="quote">No quote added yet</div>';
+      h+='<button class="btn pri full lg" style="margin-top:18px" data-act="editprofile">Edit Profile</button>';
+    }else{
+      h+='<div class="stack"><label class="field">Full name<input data-pf="name" value="'+esc(p.name)+'"></label><label class="field">Email address<input data-pf="email" type="email" value="'+esc(p.email)+'"></label><label class="field">Personal quote<textarea data-pf="quote" rows="3" placeholder="Add a personal quote or motto">'+esc(p.quote)+'</textarea></label>'+(S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" style="flex:1;justify-content:center" data-act="saveprofile">'+ic('save','sm')+'Save Changes</button><button class="btn" style="flex:1;justify-content:center" data-act="cancelprofile">Cancel</button></div></div>';
+    }
+    h+='</div></section><section class="card"><h3>Account Information</h3><p class="sub">Your account details and system access level.</p><div class="row"><span>Account type</span><span class="tag">'+TYPE_L[u.type]+'</span></div><div class="row"><span>User ID</span><span class="mono">#'+esc(u.id)+'</span></div><div class="row"><span>Dashboard access</span><button class="btn sm" data-act="go" data-p="dashboard">Go to Dashboard</button></div></section>'+(u.type==='shop'?rateCard(u)+payEditCard(u):'')+pwCard()+'</div>';
+    return h;
+  }
+  function rateCard(u){
+    var m=S.rateMsg;
+    return '<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">Set what you charge for each printed page. The starting rate is ₱'+BASE_RATE+' per page. Clients see this rate before they submit a job.</p>'+
+      '<form id="rateForm" novalidate style="display:flex;flex-direction:column;gap:12px"><label class="field">Price per page (₱)<input id="rate-v" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+rateOf(u.id)+'"></label>'+(m?'<p class="'+(m.ok?'ok':'err')+'" role="alert">'+esc(m.t)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" type="submit">Save price</button><button class="btn" type="button" data-act="ratebase">Reset to ₱'+BASE_RATE+'</button></div></form></section>';
+  }
+  function payEditCard(u){
+    return '<section class="card"><h3>'+ic('card')+' Payment</h3><p class="sub">Upload an image clients can use to pay you, such as a QR code or an account screenshot. Clients see it on your profile.</p>'+
+      (u.pay?'<img class="payimg" src="'+esc(u.pay)+'" alt="Payment image of '+esc(u.name)+'">':'<div class="empty">'+ic('card','xl')+'<div>No payment image yet</div></div>')+
+      '<div class="actions"><label class="btn pri sm" style="cursor:pointer;position:relative">'+ic('upload','sm')+(u.pay?'Change image':'Upload image')+'<input type="file" id="payImg" accept="image/*" style="position:absolute;opacity:0;width:1px;height:1px" aria-label="Upload payment image"></label>'+(u.pay?'<button class="btn sm bad" data-act="removepay">'+ic('trash','sm')+'Remove</button>':'')+'</div></section>';
+  }
+  function pwCard(){
+    var m=S.pwMsg;
+    return '<section class="card"><h3>'+ic('shield')+' Change Password</h3><p class="sub">You can change your password whenever you like.</p><form id="pwForm" novalidate style="display:flex;flex-direction:column;gap:12px">'+pwField('pw-cur','Current password','Enter your current password','current-password')+pwField('pw-new','New password','At least 8 characters','new-password')+pwField('pw-new2','Confirm new password','Type the new password again','new-password')+(m?'<p class="'+(m.ok?'ok':'err')+'" role="alert">'+esc(m.t)+'</p>':'')+'<button class="btn pri" type="submit">Update Password</button></form></section>';
+  }
+  function pgProfiles(){
+    var u=me(),q=S.profQ.toLowerCase();
+    var by=function(t){return D.accounts.filter(function(a){return a.type===t})};
+    var fl=function(t){return by(t).filter(function(a){return !q||(a.name+' '+a.email).toLowerCase().indexOf(q)>-1})};
+    var cl=fl('client'),sh=fl('shop'),list=S.profTab==='clients'?cl:sh;
+    var h='<button class="btn ghost back" data-act="go" data-p="dashboard">'+ic('back','sm')+'Back to Dashboard</button><div class="head"><div><div class="eyebrow">Directory</div><h2>Browse Profiles</h2></div></div>';
+    h+='<section class="card" style="margin-bottom:18px"><div class="toolbar"><input id="profQ" type="search" placeholder="Search profiles by name or email" value="'+esc(S.profQ)+'" aria-label="Search profiles"></div></section>';
+    h+='<div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div class="stat">'+ic('user','lg')+'<div><b>'+by('client').length+'</b><span>Total clients</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+by('shop').length+'</b><span>Total print shops</span></div></div></div>';
+    h+='<div class="seg" role="group" aria-label="Profile type"><button data-act="proftab" data-t="clients" aria-pressed="'+(S.profTab==='clients')+'">Clients ('+cl.length+')</button><button data-act="proftab" data-t="shops" aria-pressed="'+(S.profTab==='shops')+'">Print Shops ('+sh.length+')</button></div>';
+    h+=list.length?'<div class="pgrid">'+list.map(function(a){return '<section class="card pcard">'+avatar(a,'md')+'<div><h3>'+esc(a.name)+'</h3><div class="muted">'+ic('mail','sm')+' '+esc(a.email)+'</div></div>'+(a.quote?'<div class="quote" style="width:100%">“'+esc(a.quote)+'”</div>':'')+'<span class="tag">'+TYPE_L[a.type]+'</span><button class="btn pri sm full" data-act="viewprofile" data-id="'+a.id+'">View Profile</button></section>'}).join('')+'</div>':'<section class="card">'+emptyBox('user',S.profTab==='clients'?'No client profiles found':'No print shop profiles found')+'</section>';
+    return h;
+  }
+  function pgDetail(){
+    var u=me(),a=acct(S.viewId);
+    if(!a)return '<button class="btn ghost back" data-act="go" data-p="profiles">'+ic('back','sm')+'Back to Profiles</button><section class="card">'+emptyBox('user','Profile not found')+'</section>';
+    var canPay=u.type==='client'&&a.type==='shop';
+    var h='<button class="btn ghost back" data-act="go" data-p="profiles">'+ic('back','sm')+'Back to Profiles</button><div class="narrow stack" style="max-width:660px"><section class="card"><div class="hcenter">'+avatar(a,'xl')+'<div><h2 style="font-size:28px">'+esc(a.name)+'</h2><div style="margin-top:8px"><span class="tag">'+TYPE_L[a.type]+'</span></div></div>'+(a.quote?'<div class="quote" style="width:100%">“'+esc(a.quote)+'”</div>':'')+'</div></section>';
+    h+='<section class="card"><h3>Contact Information</h3><p class="sub">Get in touch with this '+(a.type==='shop'?'print shop':'client')+'.</p><div class="row"><span>'+ic('mail')+' <span class="muted">Email</span><br><b id="em">'+esc(a.email)+'</b></span><button class="btn sm" data-act="copy" data-v="'+esc(a.email)+'">Copy</button></div>';
+    if(canPay){
+      h+='<div class="row" style="margin-top:10px"><span>'+ic('printer')+' <span class="muted">Shop dashboard</span><br><b>See your jobs at this shop</b></span><button class="btn sm" data-act="shopview">View dashboard</button></div>';
+    }
+    h+='</section>';
+    if(a.type==='shop'){
+      var payImg=a.pay?'<img class="payimg" src="'+esc(a.pay)+'" alt="Payment image of '+esc(a.name)+'">':'<div class="empty">'+ic('card','xl')+'<div>This shop has not added a payment image yet</div></div>';
+      h+='<section class="card"><h3>'+ic('card')+' Payment</h3>';
+      if(canPay){
+        h+='<p class="sub">'+(S.paying?'Use the payment details from '+esc(a.name)+' below to pay for your print job.':'Press Payment to see how to pay '+esc(a.name)+'.')+'</p>';
+        h+=S.paying
+          ?payImg+'<div class="actions" style="justify-content:center"><button class="btn" data-act="paycancel">Hide payment</button></div>'
+          :'<div class="actions" style="justify-content:center"><button class="btn pri" data-act="pay">'+ic('card','sm')+'Payment</button></div>';
+      }else{
+        h+='<p class="sub">Payment details from this print shop.</p>'+payImg;
+      }
+      h+='</section>';
+    }
+    h+='<section class="card"><h3>'+ic('shield')+' Transparency Information</h3><p class="sub">Profiles are visible to signed-in users for system integrity.</p><div class="row"><span>Account type</span><span class="tag">'+TYPE_L[a.type]+'</span></div><div class="row"><span>User ID</span><span class="mono">#'+esc(a.id)+'</span></div></section></div>';
+    return h;
+  }
+
+  /* --- a client's view of one shop: only their own jobs at that shop, no shop controls --- */
+  function pgShopView(){
+    var u=me(),s=acct(S.viewId);
+    if(!u||u.type!=='client'||!s||s.type!=='shop')return pgClient();
+    var mine=jobsFor(function(j){return j.ownerId===u.id&&j.shop===s.id});
+    var c=function(x){return mine.filter(function(j){return j.status===x}).length};
+    var h='<button class="btn ghost back" data-act="viewprofile" data-id="'+s.id+'">'+ic('back','sm')+'Back to Profile</button>';
+    h+='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>'+esc(s.name)+'</h2><p>Your jobs at this shop. Follow their status here. Only the shop can accept, print or complete them.</p></div><div class="price">₱'+rateOf(s.id)+'<small>per page</small></div></div>';
+    h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+c('pending')+'</b><span>Pending</span></div></div><div class="stat">'+ic('alert','lg')+'<div><b>'+c('queued')+'</b><span>Queued</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div></div>';
+    h+='<section class="card"><h3>'+ic('file')+' My files at this shop</h3><p class="sub">Files sent to Any available shop show up here once this shop accepts them.</p>';
+    h+=mine.length?mine.map(function(j){return jobCard(j,{price:true,steps:true,actions:j.status==='completed'?'<span class="tag">Show ticket '+j.id+' at the counter</span>':''})}).join(''):emptyBox('file','No files at this shop yet','Choose this shop when you submit a print job');
+    return h+'</section>';
+  }
+
+  /* --- modal --- */
+  /* ---------- real files: stored in this browser (IndexedDB) so shops can open them ---------- */
+  var FILES=(function(){
+    var mem={},dbp=null;
+    function db(){
+      if(dbp)return dbp;
+      dbp=new Promise(function(res,rej){
+        try{var q=indexedDB.open('printease-files',1);q.onupgradeneeded=function(){q.result.createObjectStore('f')};q.onsuccess=function(){res(q.result)};q.onerror=function(){rej(q.error)}}catch(e){rej(e)}
+      });
+      return dbp;
+    }
+    function tx(mode,fn){return db().then(function(d){return new Promise(function(res,rej){var t=d.transaction('f',mode),r=fn(t.objectStore('f'));t.oncomplete=function(){res(r&&r.result)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)}})})}
+    return{
+      put:function(id,blob){mem[id]=blob;return tx('readwrite',function(st){return st.put(blob,id)}).catch(function(){})},
+      get:function(id){if(mem[id])return Promise.resolve(mem[id]);return tx('readonly',function(st){return st.get(id)}).then(function(b){return b||null}).catch(function(){return null})},
+      del:function(id){delete mem[id];return tx('readwrite',function(st){return st.delete(id)}).catch(function(){})},
+      clear:function(){mem={};return tx('readwrite',function(st){return st.clear()}).catch(function(){})}
+    };
+  })();
+  function zipRead(buf){
+    var u8=new Uint8Array(buf),dv=new DataView(buf),i=u8.length-22,ents={};
+    while(i>=0&&dv.getUint32(i,true)!==0x06054b50)i--;
+    if(i<0)throw new Error('not a zip file');
+    var n=dv.getUint16(i+10,true),p=dv.getUint32(i+16,true),k;
+    for(k=0;k<n;k++){
+      if(dv.getUint32(p,true)!==0x02014b50)break;
+      var m=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+      ents[new TextDecoder().decode(u8.subarray(p+46,p+46+nl))]={m:m,cs:cs,lo:lo};
+      p+=46+nl+el+cl;
+    }
+    return {u8:u8,dv:dv,ents:ents};
+  }
+  function zipFile(z,name){
+    var e=z.ents[name];if(!e)return Promise.resolve(null);
+    var nl=z.dv.getUint16(e.lo+26,true),el=z.dv.getUint16(e.lo+28,true),st=e.lo+30+nl+el,data=z.u8.subarray(st,st+e.cs);
+    if(e.m===0)return Promise.resolve(data);
+    return new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer().then(function(b){return new Uint8Array(b)});
+  }
+  var WNS='http://schemas.openxmlformats.org/wordprocessingml/2006/main',RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  function xKids(el,n){var r=[],c=el&&el.firstElementChild;for(;c;c=c.nextElementSibling)if(c.localName===n)r.push(c);return r}
+  function xOne(el,n){return xKids(el,n)[0]||null}
+  function wAt(el,n){return el?(el.getAttributeNS(WNS,n)||el.getAttribute('w:'+n)||''):''}
+  function wOn(el){if(!el)return false;var v=wAt(el,'val');return v!=='0'&&v!=='false'&&v!=='none'}
+  function docxToHtml(blob){
+    return blob.arrayBuffer().then(function(buf){
+      var z=zipRead(buf),td=new TextDecoder();
+      var xml=function(n){return zipFile(z,n).then(function(b){return b?new DOMParser().parseFromString(td.decode(b),'application/xml'):null})};
+      return Promise.all([xml('word/document.xml'),xml('word/_rels/document.xml.rels'),xml('word/numbering.xml')]).then(function(a){
+        var doc=a[0],relX=a[1],numX=a[2],rels={},numMap={},absFmt={},imgs={},i;
+        if(!doc||doc.getElementsByTagName('parsererror').length)throw new Error('unreadable document');
+        if(relX){var rs=relX.getElementsByTagName('Relationship');for(i=0;i<rs.length;i++)rels[rs[i].getAttribute('Id')]={t:rs[i].getAttribute('Target'),m:rs[i].getAttribute('TargetMode')}}
+        if(numX){
+          xKids(numX.documentElement,'abstractNum').forEach(function(an){var f={};xKids(an,'lvl').forEach(function(l){f[wAt(l,'ilvl')]=wAt(xOne(l,'numFmt'),'val')});absFmt[wAt(an,'abstractNumId')]=f});
+          xKids(numX.documentElement,'num').forEach(function(nm){numMap[wAt(nm,'numId')]=wAt(xOne(nm,'abstractNumId'),'val')});
+        }
+        function isBullet(id,lvl){var f=absFmt[numMap[id]];return !f||f[lvl]==='bullet'||f[lvl]==='none'||f[lvl]===undefined}
+        var need=[],all=doc.getElementsByTagName('*');
+        for(i=0;i<all.length;i++){var el=all[i],rid=null;
+          if(el.localName==='blip')rid=el.getAttributeNS(RNS,'embed')||el.getAttribute('r:embed');
+          else if(el.localName==='imagedata')rid=el.getAttributeNS(RNS,'id')||el.getAttribute('r:id');
+          if(rid&&rels[rid]&&need.indexOf(rid)<0)need.push(rid);
+        }
+        var MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',bmp:'image/bmp',svg:'image/svg+xml'};
+        return Promise.all(need.slice(0,40).map(function(rid){
+          var tg=String(rels[rid].t||'').replace(/^\/?(word\/)?/,'word/'),ext=(tg.split('.').pop()||'').toLowerCase();
+          if(!MIME[ext])return null;
+          return zipFile(z,tg).then(function(b){if(!b)return;return new Promise(function(res){var fr=new FileReader();fr.onload=function(){imgs[rid]=fr.result;res()};fr.onerror=function(){res()};fr.readAsDataURL(new Blob([b],{type:MIME[ext]}))})});
+        })).then(function(){
+          function runHtml(r){
+            var rp=xOne(r,'rPr'),out='',c=r.firstElementChild;
+            for(;c;c=c.nextElementSibling){
+              var n=c.localName;
+              if(n==='t')out+=esc(c.textContent);
+              else if(n==='tab')out+='&emsp;';
+              else if(n==='br')out+=wAt(c,'type')==='page'?'<hr class="pb">':'<br>';
+              else if(n==='cr')out+='<br>';
+              else if(n==='noBreakHyphen')out+='-';
+              else if(n==='drawing'||n==='pict'){
+                var bl=c.getElementsByTagName('*'),q,im='';
+                for(q=0;q<bl.length&&!im;q++){var b2=bl[q],id2=null;
+                  if(b2.localName==='blip')id2=b2.getAttributeNS(RNS,'embed')||b2.getAttribute('r:embed');
+                  else if(b2.localName==='imagedata')id2=b2.getAttributeNS(RNS,'id')||b2.getAttribute('r:id');
+                  if(id2&&imgs[id2]){
+                    var ex=c.getElementsByTagName('wp:extent')[0]||Array.prototype.filter.call(bl,function(x){return x.localName==='extent'})[0],w=ex?Math.round(Number(ex.getAttribute('cx'))/9525):0;
+                    im='<img src="'+imgs[id2]+'" alt=""'+(w>0?' style="width:'+Math.min(w,720)+'px;max-width:100%"':'')+'>';
+                  }
+                }
+                out+=im;
+              }
+            }
+            if(!out)return '';
+            if(rp){
+              if(wOn(xOne(rp,'b')))out='<b>'+out+'</b>';
+              if(wOn(xOne(rp,'i')))out='<i>'+out+'</i>';
+              if(wOn(xOne(rp,'u')))out='<u>'+out+'</u>';
+              if(wOn(xOne(rp,'strike')))out='<s>'+out+'</s>';
+              var va=wAt(xOne(rp,'vertAlign'),'val');
+              if(va==='superscript')out='<sup>'+out+'</sup>';else if(va==='subscript')out='<sub>'+out+'</sub>';
+              var col=wAt(xOne(rp,'color'),'val');
+              if(/^[0-9A-Fa-f]{6}$/.test(col)&&col.toUpperCase()!=='FFFFFF')out='<span style="color:#'+col+'">'+out+'</span>';
+            }
+            return out;
+          }
+          function inlineHtml(node){
+            var out='',c=node.firstElementChild;
+            for(;c;c=c.nextElementSibling){
+              var n=c.localName;
+              if(n==='r')out+=runHtml(c);
+              else if(n==='hyperlink'){
+                var rid=c.getAttributeNS(RNS,'id')||c.getAttribute('r:id'),h=rid&&rels[rid]&&rels[rid].t,inner=inlineHtml(c);
+                out+=(h&&/^(https?:|mailto:)/i.test(h))?'<a href="'+esc(h)+'" target="_blank" rel="noopener">'+inner+'</a>':inner;
+              }
+              else if(n==='fldSimple'||n==='smartTag'||n==='ins'||n==='sdtContent'||n==='sdt')out+=inlineHtml(n==='sdt'?(xOne(c,'sdtContent')||c):c);
+            }
+            return out;
+          }
+          function blocks(container){
+            var out='',list=null,c=container.firstElementChild;
+            function closeList(){if(list){out+='</'+list.tag+'>';list=null}}
+            for(;c;c=c.nextElementSibling){
+              var n=c.localName;
+              if(n==='p'){
+                var pPr=xOne(c,'pPr'),st=pPr?wAt(xOne(pPr,'pStyle'),'val'):'',jc=pPr?wAt(xOne(pPr,'jc'),'val'):'',np=pPr?xOne(pPr,'numPr'):null,inner=inlineHtml(c);
+                var al=jc==='center'?'center':(jc==='right'||jc==='end')?'right':jc==='both'?'justify':'';
+                var sty=al?' style="text-align:'+al+'"':'';
+                if(np&&xOne(np,'numId')&&wAt(xOne(np,'numId'),'val')!=='0'){
+                  var nid=wAt(xOne(np,'numId'),'val'),lv=wAt(xOne(np,'ilvl'),'val')||'0',tag=isBullet(nid,lv)?'ul':'ol';
+                  if(!list||list.tag!==tag||list.id!==nid){closeList();list={tag:tag,id:nid};out+='<'+tag+'>'}
+                  out+='<li style="margin-left:'+(Number(lv)*1.4)+'em">'+inner+'</li>';
+                  continue;
+                }
+                closeList();
+                var hm=/^heading\s?([1-6])$/i.exec(st),tg2=hm?'h'+hm[1]:(/^title$/i.test(st)?'h1':'p');
+                out+='<'+tg2+sty+'>'+inner+'</'+tg2+'>';
+              }
+              else if(n==='tbl'){
+                closeList();
+                out+='<table>'+xKids(c,'tr').map(function(tr){
+                  return '<tr>'+xKids(tr,'tc').map(function(tc){
+                    var tp=xOne(tc,'tcPr'),gs=tp?wAt(xOne(tp,'gridSpan'),'val'):'';
+                    return '<td'+(Number(gs)>1?' colspan="'+Number(gs)+'"':'')+'>'+blocks(tc)+'</td>';
+                  }).join('')+'</tr>';
+                }).join('')+'</table>';
+              }
+              else if(n==='sdt'){closeList();out+=blocks(xOne(c,'sdtContent')||c)}
+            }
+            closeList();return out;
+          }
+          var body=xOne(doc.documentElement,'body');
+          return blocks(body||doc.documentElement);
+        });
+      });
+    });
+  }
+  function loadPreview(j){
+    S.fc=S.fc||{};
+    if(!j||!j.hasFile||S.fc[j.id])return;
+    S.fc[j.id]={k:'load'};
+    FILES.get(j.id).then(function(b){
+      if(!b)return {k:'none'};
+      var n=j.name||'',t=(b.type||j.type||'').toLowerCase(),isPdf=t==='application/pdf'||/\.pdf$/i.test(n);
+      var u=URL.createObjectURL(isPdf&&t!=='application/pdf'?new Blob([b],{type:'application/pdf'}):b);
+      if(isPdf)return {k:'pdf',u:u};
+      if(/^image\/(png|jpe?g|gif|webp|bmp|svg\+xml)$/.test(t)||/\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(n))return {k:'img',u:u};
+      if(t==='text/plain'||/\.txt$/i.test(n))return b.text().then(function(x){return {k:'txt',u:u,v:x.slice(0,200000)}});
+      if(/\.docx$/i.test(n)||t.indexOf('wordprocessingml')>-1)return docxToHtml(b).then(function(h){return {k:'docx',u:u,v:h}},function(){return {k:'other',u:u}});
+      return {k:'other',u:u};
+    }).catch(function(){return {k:'none'}}).then(function(r){S.fc[j.id]=r;if(S.modal===j.id)render()});
+  }
+  /* ---------- printing from the shop's own computer ---------- */
+  var PAPER_CSS={A4:'A4',A3:'A3',Letter:'letter',Legal:'legal'};
+  function canPrint(j){var u=me();return !!(u&&u.type==='shop'&&j&&j.status!=='declined'&&(j.shop===u.id||j.shop==='any'))}
+  function printPanel(j){
+    if(!canPrint(j))return '';
+    var fc0=(S.fc||{})[j.id],real=!!(fc0&&(fc0.k==='img'||fc0.k==='txt'||fc0.k==='pdf'||fc0.k==='docx'));
+    return '<div class="printbox"><h4>'+ic('printer','sm')+' Print this file</h4><p>Connect this computer or device to the printing machine, then press Print. Your browser opens its print window, where you pick the printer.'+(real?'':' The original file is not available here, so a layout sheet with the job settings prints instead.')+'</p><ul><li><span>Paper</span> '+esc(j.paper)+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</li><li><span>Colour</span> '+(j.color==='bw'?'Black &amp; white':'Full colour')+'</li><li><span>Sides</span> '+(j.sides==='double'?'Two-sided':'One-sided')+'</li><li><span>Copies</span> '+j.copies+'</li></ul><button class="btn pri" data-act="printjob" data-id="'+j.id+'">'+ic('printer','sm')+(real?'Print file':'Print layout sheet')+'</button></div>';
+  }
+  function printJob(j){
+    if(!canPrint(j))return;
+    var old=document.getElementById('printRoot');if(old)old.remove();
+    var oldS=document.getElementById('printPage');if(oldS)oldS.remove();
+    var st=document.createElement('style');st.id='printPage';
+    st.textContent='@page{size:'+(PAPER_CSS[j.paper]||'A4')+' '+(j.orient==='landscape'?'landscape':'portrait')+';margin:12mm}';
+    document.head.appendChild(st);
+    var root=document.createElement('div');root.id='printRoot';root.className=j.color==='bw'?'bw':'';
+    var pv=(S.fc||{})[j.id],viaFrame=null,k,lines='';
+    if(pv&&pv.k==='img')root.innerHTML='<img src="'+esc(pv.u)+'" alt="'+esc(j.name)+'">';
+    else if(pv&&pv.k==='txt')root.innerHTML='<pre>'+esc(pv.v)+'</pre>';
+    else if(pv&&pv.k==='docx')root.innerHTML='<div class="docx">'+pv.v+'</div>';
+    else if(pv&&pv.k==='pdf')viaFrame=$('.prev iframe');
+    else{for(k=0;k<16;k++)lines+='<div class="pr" style="width:'+(k%5===4?'70':k%3===2?'88':'100')+'%"></div>';
+      root.innerHTML='<div class="pl"><i></i>PrintEase</div><div class="pt">'+esc(j.name)+'</div><div class="ps">Ticket '+j.id+' · '+j.pages+' page'+(j.pages>1?'s':'')+' · '+esc(j.paper)+' · '+(j.color==='bw'?'Black &amp; white':'Colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+j.copies+' cop'+(j.copies>1?'ies':'y')+'</div>'+lines}
+    var done=function(){var r=document.getElementById('printRoot');if(r)r.remove();var s2=document.getElementById('printPage');if(s2)s2.remove();window.removeEventListener('afterprint',done)};
+    if(viaFrame){
+      try{viaFrame.contentWindow.focus();viaFrame.contentWindow.print();toast('Print window opened. Choose your printer there.');return}
+      catch(er){window.open(pv.u,'_blank');toast('The file opened in a new tab. Print it from there.');return}
+    }
+    document.body.appendChild(root);
+    window.addEventListener('afterprint',done);
+    var go2=function(){window.print();toast('Print window opened. Choose your printer there.')};
+    var im=root.querySelector('img');
+    if(im&&im.decode)im.decode().then(go2,go2);else setTimeout(go2,50);
+  }
+  function typeLabel(j){var t=String(j.type||'').toLowerCase(),n=String(j.name||'');
+    if(t.indexOf('wordprocessingml')>-1||/\.docx$/i.test(n))return 'Word document (.docx)';
+    if(t==='application/msword'||/\.doc$/i.test(n))return 'Word document (.doc)';
+    if(t==='application/pdf'||/\.pdf$/i.test(n))return 'PDF document';
+    if(t.indexOf('presentationml')>-1||/\.pptx$/i.test(n))return 'PowerPoint (.pptx)';
+    if(t.indexOf('spreadsheetml')>-1||/\.xlsx$/i.test(n))return 'Excel (.xlsx)';
+    return t||'unknown'}
+  function modalHtml(){
+    var j=S.modal?D.jobs.filter(function(x){return x.id===S.modal})[0]:null;if(!j)return '';
+    var o=acct(j.ownerId),pv='',fc=(S.fc||{})[j.id];
+    var sheet=function(note){
+      var lines='',k;for(k=0;k<14;k++)lines+='<i class="'+(k%5===4?'s':k%3===2?'m':'')+'"></i>';
+      return '<div class="sheet"><div class="paper'+(j.orient==='landscape'?' land':'')+(j.color==='color'?' col':'')+'"><b>'+esc(j.name)+'</b><small>'+j.pages+' page'+(j.pages>1?'s':'')+' · '+j.paper+' · '+(j.color==='bw'?'B&amp;W':'Colour')+'</small>'+lines+'</div></div><p class="fnote">'+note+'</p>';
+    };
+    var dl=fc&&fc.u?' <a href="'+esc(fc.u)+'" download="'+esc(j.name)+'">Download the original file</a>':'';
+    if(j.hasFile&&(!fc||fc.k==='load'))pv='<div class="sheet"><span class="muted">Loading the file…</span></div>';
+    else if(fc&&fc.k==='img')pv='<div class="prev"><img src="'+esc(fc.u)+'" alt="Preview of '+esc(j.name)+'"></div><p class="fnote">'+dl+'</p>';
+    else if(fc&&fc.k==='txt')pv='<div class="prev">'+esc(fc.v)+'</div><p class="fnote">'+dl+'</p>';
+    else if(fc&&fc.k==='docx')pv='<div class="prev doc"><div class="docx">'+fc.v+'</div></div><p class="fnote">Shown as a reading view. Fonts and page layout can differ from Word.'+dl+'</p>';
+    else if(fc&&fc.k==='pdf')pv='<div class="prev"><iframe src="'+esc(fc.u)+'" title="Preview of '+esc(j.name)+'"></iframe></div><p class="fnote"><a href="'+esc(fc.u)+'" target="_blank" rel="noopener">Open in a new tab</a> ·'+dl+'</p>';
+    else if(fc&&fc.k==='other')pv=sheet('This file type cannot be shown in the browser, so the sheet shows the print settings.'+dl);
+    else if(fc&&fc.k==='none')pv=sheet('The original file was not found in this browser, so the sheet shows the print settings.');
+    else pv=sheet('No original file is stored for this job, so the sheet shows the print settings.');
+    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pill(j.status)+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+'</dd><dt>Paper size</dt><dd>'+j.paper+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
+  }
+
+  /* ---------- render ---------- */
+  function render(){
+    var p=S.page,u=me();
+    if(['dashboard','profile','profiles','profile-detail','shop-view'].indexOf(p)>-1&&!u)p=S.page='login';
+    renderNav();
+    var h='';
+    if(p==='home')h=pgHome();
+    else if(p==='login')h=pgAuth(false);
+    else if(p==='signup')h=pgAuth(true);
+    else if(p==='dashboard')h=u.type==='client'?pgClient():u.type==='shop'?pgShop():pgAdmin();
+    else if(p==='profile')h=pgProfile();
+    else if(p==='profiles')h=pgProfiles();
+    else if(p==='profile-detail')h=pgDetail();
+    else if(p==='shop-view')h=pgShopView();
+    $('#view').innerHTML=h;
+    $('#modal').innerHTML=modalHtml();
+    bind();persist();
+  }
+  function go(p){S.page=p;S.err='';S.bell=false;S.modal=null;S.editing=false;S.pf=null;S.paying=false;S.pwMsg=null;S.rateMsg=null;if(p==='login'||p==='signup'){S.vals={name:'',email:'',type:'client'}}window.scrollTo(0,0);render()}
+  function login(a){D.userId=a.id;S.err='';S.vals={name:'',email:'',type:'client'};S.tab={client:'upload',shop:'queue',admin:'all'};go('dashboard');toast('Signed in as '+a.name)}
+  function fail(m,v){S.err=m;S.vals=v||S.vals;render()}
+
+  /* ---------- events ---------- */
+  function refocus(id,pos){var n=document.getElementById(id);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}}}
+  function addFiles(list){
+    Array.prototype.forEach.call(list,function(f){
+      var d={id:'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),ownerId:D.userId,name:f.name,size:f.size,type:f.type||'application/octet-stream',pages:Math.min(300,Math.max(1,Math.round(f.size/90000))),copies:1,paper:'A4',color:'bw',sides:'single',orient:'portrait',shop:'any',notes:'',preview:null};
+      S.drafts.push(d);
+      d.file=f;
+    });
+    render();toast(list.length+' file'+(list.length>1?'s':'')+' ready to customize');
+  }
+  function bind(){
+    var fi=$('#fileIn');if(fi)fi.addEventListener('change',function(){if(fi.files.length)addFiles(fi.files)});
+    var dz=$('#drop');
+    if(dz){
+      ['dragenter','dragover'].forEach(function(e){dz.addEventListener(e,function(ev){ev.preventDefault();dz.classList.add('over')})});
+      ['dragleave','drop'].forEach(function(e){dz.addEventListener(e,function(ev){ev.preventDefault();dz.classList.remove('over')})});
+      dz.addEventListener('drop',function(ev){if(ev.dataTransfer&&ev.dataTransfer.files.length)addFiles(ev.dataTransfer.files)});
+    }
+    var py=$('#payImg');
+    if(py)py.addEventListener('change',function(){
+      var f=py.files[0],u=me();if(!f||!u)return;
+      if(!/^image\//.test(f.type)){toast('Choose an image file');return}
+      if(f.size>1500000){toast('Choose an image under 1.5 MB');return}
+      var r=new FileReader();r.onload=function(){u.pay=r.result;render();toast('Payment image saved')};r.readAsDataURL(f);
+    });
+    var pi=$('#pfImg');
+    if(pi)pi.addEventListener('change',function(){
+      var f=pi.files[0];if(!f)return;
+      if(f.size>1500000){toast('Choose a photo under 1.5 MB');return}
+      var r=new FileReader();r.onload=function(){S.pf.img=r.result;render()};r.readAsDataURL(f);
+    });
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.id==='ovl'){S.modal=null;render();return}
+    var b=e.target.closest('[data-act]');
+    if(!b){if(S.bell&&!e.target.closest('.panel')){S.bell=false;renderNav()}return}
+    var act=b.dataset.act,id=b.dataset.id,u=me();
+    if(act==='go'){go(b.dataset.p);return}
+    if(act==='logout'){D.userId=null;S.bell=false;S.drafts.forEach(function(){});go('home');toast('Signed out');return}
+    if(act==='ratebase'){var rb=me();if(rb&&rb.type==='shop'){rb.rate=BASE_RATE;S.rateMsg={ok:true,t:'Price reset to ₱'+BASE_RATE+' per page.'};render();toast('Price reset')}return}
+    if(act==='quick'){var qa=acct(id);if(qa)login(qa);return}
+    if(act==='togglepw'){var inp=document.getElementById(b.dataset.t);if(inp){var show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show'}return}
+    if(act==='bell'){S.bell=!S.bell;if(!S.bell)D.notes.forEach(function(n){if(u&&n.to===u.id)n.read=true});render();return}
+    if(act==='tab'){S.tab[b.dataset.r]=b.dataset.t;render();return}
+    if(act==='proftab'){S.profTab=b.dataset.t;render();return}
+    if(act==='rmdraft'){S.drafts=S.drafts.filter(function(d){return d.id!==id});render();return}
+    if(act==='queue'){
+      var d=S.drafts.filter(function(x){return x.id===id})[0];if(!d)return;
+      var tk='PE-'+pad(++D.seq);
+      D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file});
+      if(d.file)FILES.put(tk,d.file);
+      S.drafts=S.drafts.filter(function(x){return x.id!==id});
+      S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');return;
+    }
+    if(act==='deljob'){D.jobs=D.jobs.filter(function(j){return j.id!==id});FILES.del(id);if(S.fc&&S.fc[id]){try{URL.revokeObjectURL(S.fc[id].u)}catch(er){}delete S.fc[id]}render();toast('Print job deleted');return}
+    if(act==='st'){var j=D.jobs.filter(function(x){return x.id===id})[0];if(j){setStatus(j,b.dataset.s);render()}return}
+    if(act==='decline'){
+      var dj=D.jobs.filter(function(x){return x.id===id})[0];if(!dj)return;
+      if(dj.shop==='any'){dj.skip=(dj.skip||[]).concat([u.id]);render();toast('Hidden from your queue. Other shops can still accept it.')}
+      else{setStatus(dj,'declined');render()}
+      return;
+    }
+    if(act==='view'){S.modal=id;render();loadPreview(D.jobs.filter(function(x){return x.id===id})[0]);return}
+    if(act==='printjob'){var pj=D.jobs.filter(function(x){return x.id===id})[0];printJob(pj);return}
+    if(act==='closemodal'){S.modal=null;render();return}
+    if(act==='editprofile'){S.editing=true;S.err='';S.pf={name:u.name,email:u.email,quote:u.quote||'',img:u.img||''};render();return}
+    if(act==='cancelprofile'){S.editing=false;S.pf=null;S.err='';render();return}
+    if(act==='saveprofile'){
+      var p=S.pf,nm=p.name.trim(),em=p.email.trim().toLowerCase();
+      if(!nm||!em){S.err='Name and email are required.';render();return}
+      if(!/^\S+@\S+\.\S+$/.test(em)){S.err='Enter a valid email address.';render();return}
+      if(D.accounts.some(function(a){return a.id!==u.id&&a.email===em})){S.err='Another account already uses this email.';render();return}
+      u.name=nm;u.email=em;u.quote=p.quote.trim();u.img=p.img;S.editing=false;S.pf=null;S.err='';render();toast('Profile saved');return;
+    }
+    if(act==='shopview'){S.page='shop-view';window.scrollTo(0,0);render();return}
+    if(act==='viewprofile'){S.viewId=id;S.page='profile-detail';S.paying=false;window.scrollTo(0,0);render();return}
+    if(act==='copy'){
+      var v=b.dataset.v;
+      try{navigator.clipboard.writeText(v).then(function(){toast('Email copied')},function(){toast('Select the email and copy it')})}catch(er){toast('Select the email and copy it')}
+      return;
+    }
+    if(act==='removepay'){if(u){u.pay='';render();toast('Payment image removed')}return}
+    if(act==='pay'){S.paying=true;render();return}
+    if(act==='paycancel'){S.paying=false;render();return}
+    if(act==='reset'){try{localStorage.removeItem(KEY)}catch(er){}FILES.clear();S.fc={};D=seed();S.drafts=[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];go('home');toast('Sample data restored');return}
+  });
+  document.addEventListener('input',function(e){
+    var t=e.target;
+    if(t.id==='shopQ'||t.id==='adminQ'||t.id==='profQ'){
+      var pos=t.selectionStart,id=t.id;
+      if(id==='shopQ')S.shopQ=t.value;else if(id==='adminQ')S.adminQ=t.value;else S.profQ=t.value;
+      render();refocus(id,pos);return;
+    }
+    if(t.dataset&&t.dataset.pf){S.pf[t.dataset.pf]=t.value;return}
+    draftEdit(t);
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.id==='shopF'){S.shopF=t.value;render();return}
+    if(t.id==='adminF'){S.adminF=t.value;render();return}
+    if(t.dataset&&t.dataset.move){
+      var j=D.jobs.filter(function(x){return x.id===t.dataset.move})[0];
+      if(j){j.shop=t.value;j.skip=[];render();toast(j.id+' sent to '+shopName(j.shop))}
+      return;
+    }
+    draftEdit(t);
+  });
+  function draftEdit(el){
+    if(!el.dataset||!el.dataset.f)return;
+    var card=el.closest('[data-draft]');if(!card)return;
+    var d=S.drafts.filter(function(x){return x.id===card.dataset.draft})[0];if(!d)return;
+    var k=el.dataset.f,v=el.value;
+    if(k==='pages')v=Math.max(1,Math.min(999,parseInt(v,10)||1));
+    if(k==='copies')v=Math.max(1,Math.min(100,parseInt(v,10)||1));
+    d[k]=v;
+    var p=$('[data-price]',card);
+    if(p)p.innerHTML=peso(cost(d))+'<small>'+priceNote(d)+'</small>';
+  }
+  document.addEventListener('submit',function(e){
+    var f=e.target;
+    if(f.id==='rateForm'){
+      e.preventDefault();
+      var ru=me(),rv=Math.round(Number($('#rate-v').value));
+      if(!ru||ru.type!=='shop')return;
+      if(!(rv>=1&&rv<=999)){S.rateMsg={ok:false,t:'Enter a price from ₱1 to ₱999 per page.'};render();return}
+      ru.rate=rv;S.rateMsg={ok:true,t:'Saved. New jobs at your shop are priced at ₱'+rv+' per page.'};render();toast('Price per page saved');return;
+    }
+    if(f.id==='pwForm'){
+      e.preventDefault();
+      var pu=me(),cur=$('#pw-cur').value,nw=$('#pw-new').value,nw2=$('#pw-new2').value,pm='';
+      if(!cur||!nw||!nw2)pm='Fill in all three fields.';
+      else if(cur!==pu.pw)pm='Your current password is incorrect.';
+      else if(nw.length<8)pm='Use a password with at least 8 characters.';
+      else if(nw===cur)pm='Choose a password different from your current one.';
+      else if(nw!==nw2)pm='The new passwords do not match.';
+      if(pm){S.pwMsg={ok:false,t:pm};render();return}
+      pu.pw=nw;S.pwMsg={ok:true,t:'Password updated. Use it the next time you sign in.'};render();toast('Password updated');return;
+    }
+    if(f.id!=='authForm')return;
+    e.preventDefault();
+    var up=S.page==='signup',em=$('#au-email').value.trim().toLowerCase(),pw=$('#au-pw').value,a;
+    if(up){
+      var nm=$('#au-name').value.trim().replace(/\s+/g,' '),ty=$('#au-type').value,pw2=$('#au-pw2').value,v={name:nm,email:em,type:ty};
+      if(!nm||!em||!pw)return fail('Enter your name, email and a password.',v);
+      if(!/^\S+@\S+\.\S+$/.test(em))return fail('Enter a valid email address.',v);
+      if(pw.length<8)return fail('Use a password with at least 8 characters.',v);
+      if(pw!==pw2)return fail('The two passwords do not match.',v);
+      if(D.accounts.some(function(x){return x.email===em}))return fail('An account with this email already exists. Sign in instead.',v);
+      a={id:'u'+Date.now().toString(36),name:nm,email:em,pw:pw,type:ty,quote:'',img:''};
+      D.accounts.push(a);login(a);
+    }else{
+      a=D.accounts.filter(function(x){return x.email===em&&x.pw===pw})[0];
+      if(!a)return fail('Email or password is incorrect.',{name:'',email:em,type:'client'});
+      login(a);
+    }
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape')return;
+    if(S.modal){S.modal=null;render()}
+    else if(S.bell){S.bell=false;renderNav()}
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
