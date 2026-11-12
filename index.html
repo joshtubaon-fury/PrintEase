@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+  
+
+
 <title>PrintEase</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -72,10 +77,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .avatar.sm{width:36px;height:36px;font-size:13px}
 .avatar.md{width:72px;height:72px;font-size:26px}
 .avatar.xl{width:104px;height:104px;font-size:38px}
-.relwrap{position:relative}
+.relwrap{position:static}
 .bell{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:10px;width:38px;height:38px;cursor:pointer;display:grid;place-items:center}
 .bell .dot{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:10px;background:var(--d-fg);color:var(--surface);font-size:11px;font-weight:700;display:grid;place-items:center;padding-inline:5px}
-.panel{position:absolute;right:0;top:46px;width:min(360px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:14px;z-index:10}
+.panel{position:absolute;right:0;top:calc(100% + 6px);width:min(360px,100%);max-height:min(70vh,calc(100dvh - 120px));overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.2);padding:14px;z-index:10}
 .panel h3{font-size:16px;margin-bottom:8px}
 .note{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
 .note.unread::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;margin-top:7px}
@@ -325,9 +330,6 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
   #printRoot .pr{height:10px;border-radius:5px;background:#e3e6f2;margin:0 0 12px}
 }
 </style>
-</head>
-<body>
-
 
 <div class="wrap">
   <header class="bar">
@@ -647,7 +649,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     }else{
       h+='<div class="stack"><label class="field">Full name<input data-pf="name" value="'+esc(p.name)+'"></label><label class="field">Email address<input data-pf="email" type="email" value="'+esc(p.email)+'"></label><label class="field">Personal quote<textarea data-pf="quote" rows="3" placeholder="Add a personal quote or motto">'+esc(p.quote)+'</textarea></label>'+(S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" style="flex:1;justify-content:center" data-act="saveprofile">'+ic('save','sm')+'Save Changes</button><button class="btn" style="flex:1;justify-content:center" data-act="cancelprofile">Cancel</button></div></div>';
     }
-    h+='</div></section><section class="card"><h3>Account Information</h3><p class="sub">Your account details and system access level.</p><div class="row"><span>Account type</span><span class="tag">'+TYPE_L[u.type]+'</span></div><div class="row"><span>User ID</span><span class="mono">#'+esc(u.id)+'</span></div><div class="row"><span>Dashboard access</span><button class="btn sm" data-act="go" data-p="dashboard">Go to Dashboard</button></div></section>'+(u.type==='shop'?rateCard(u)+payEditCard(u):'')+pwCard()+'</div>';
+    h+='</div></section><section class="card"><h3>Account Information</h3><p class="sub">Your account details and system access level.</p><div class="row"><span>User ID</span><span class="mono">#'+esc(u.id)+'</span></div><div class="row"><span>Dashboard access</span><button class="btn sm" data-act="go" data-p="dashboard">Go to Dashboard</button></div></section>'+(u.type==='shop'?rateCard(u)+payEditCard(u):'')+pwCard()+'</div>';
     return h;
   }
   function rateCard(u){
@@ -1134,4 +1136,4 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
 })();
 </script>
 </body>
-</html>
+</html
