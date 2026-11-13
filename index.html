@@ -346,8 +346,16 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script>
+/* ===== Shared database (Supabase) =====
+   Leave both values empty to run the single-device demo (data stays in this browser).
+   Paste your Supabase Project URL and anon public key between the quotes to share data across every device. */
+window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaoghjjlpisjt.supabase.co", key: "sb_publishable_qdiMRhQs_EYHhwYy-mf29w_Gh7wHa7P" };
+</script>
+<script>
 (function(){
   var KEY='printease.v4';
+  var CFG=window.PRINTEASE_CONFIG||{};
+  var CLOUD=!!(CFG.url&&CFG.key),BASE=String(CFG.url||'').replace(/\/+$/,'');
   var ST={pending:'Pending',queued:'Queued',printing:'Printing',completed:'Completed',declined:'Declined'};
   var BASE_RATE=5;
   var IC={
@@ -410,15 +418,16 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     return seed();
   }
   function persist(){
+    if(CLOUD){SB.schedule();return}
     try{
       var o={v:3,accounts:D.accounts,jobs:D.jobs.map(function(x){var c={};for(var k in x)if(k!=='preview')c[k]=x[k];return c}),notes:D.notes,seq:D.seq,nseq:D.nseq,userId:D.userId};
       localStorage.setItem(KEY,JSON.stringify(o));
     }catch(e){}
   }
-  D=load();
+  D=CLOUD?{v:3,accounts:[],jobs:[],notes:[],seq:0,nseq:0,userId:null}:load();
   var S={page:D.userId?'dashboard':'home',tab:{client:'upload',shop:'queue',admin:'all'},drafts:[],bell:false,modal:null,err:'',vals:{name:'',email:'',type:'client'},
     shopQ:'',shopF:'all',adminQ:'',adminF:'all',profQ:'',profTab:'clients',viewId:null,editing:false,pf:null,paying:false,pwMsg:null};
-  S.drafts=[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];
+  S.drafts=CLOUD?[]:[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];
 
   /* ---------- helpers ---------- */
   function $(s,r){return (r||document).querySelector(s)}
@@ -447,7 +456,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
   function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3400)}
 
   /* ---------- notifications and status flow ---------- */
-  function notify(j,text,email){D.notes.unshift({id:D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false,email:email||''})}
+  function notify(j,text,email){D.notes.unshift({id:CLOUD?'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7):D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false,email:email||''})}
   function setStatus(j,s){
     var sh=me(),shn=sh?sh.name:shopName(j.shop),o=acct(j.ownerId),first=o?o.name.split(' ')[0]:'Owner';
     if(s==='queued'){if(j.shop==='any')j.shop=sh.id;j.rate=rateOf(j.shop);notify(j,j.name+' was accepted by '+shn+' and is queued. Payment first is required. Check the shop\'s profile.')}
@@ -647,7 +656,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
       h+=u.quote?'<div class="quote">“'+esc(u.quote)+'”</div>':'<div class="quote">No quote added yet</div>';
       h+='<button class="btn pri full lg" style="margin-top:18px" data-act="editprofile">Edit Profile</button>';
     }else{
-      h+='<div class="stack"><label class="field">Full name<input data-pf="name" value="'+esc(p.name)+'"></label><label class="field">Email address<input data-pf="email" type="email" value="'+esc(p.email)+'"></label><label class="field">Personal quote<textarea data-pf="quote" rows="3" placeholder="Add a personal quote or motto">'+esc(p.quote)+'</textarea></label>'+(S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" style="flex:1;justify-content:center" data-act="saveprofile">'+ic('save','sm')+'Save Changes</button><button class="btn" style="flex:1;justify-content:center" data-act="cancelprofile">Cancel</button></div></div>';
+      h+='<div class="stack"><label class="field">Full name<input data-pf="name" value="'+esc(p.name)+'"></label><label class="field">Email address<input data-pf="email" type="email" value="'+esc(p.email)+'"'+(CLOUD?' readonly title="Your sign-in email cannot be changed here"':'')+'></label><label class="field">Personal quote<textarea data-pf="quote" rows="3" placeholder="Add a personal quote or motto">'+esc(p.quote)+'</textarea></label>'+(S.err?'<p class="err" role="alert">'+esc(S.err)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" style="flex:1;justify-content:center" data-act="saveprofile">'+ic('save','sm')+'Save Changes</button><button class="btn" style="flex:1;justify-content:center" data-act="cancelprofile">Cancel</button></div></div>';
     }
     h+='</div></section><section class="card"><h3>Account Information</h3><p class="sub">Your account details and system access level.</p><div class="row"><span>User ID</span><span class="mono">#'+esc(u.id)+'</span></div><div class="row"><span>Dashboard access</span><button class="btn sm" data-act="go" data-p="dashboard">Go to Dashboard</button></div></section>'+(u.type==='shop'?rateCard(u)+payEditCard(u):'')+pwCard()+'</div>';
     return h;
@@ -720,7 +729,204 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
   }
 
   /* --- modal --- */
-  /* ---------- real files: stored in this browser (IndexedDB) so shops can open them ---------- */
+  /* ---------- shared database (Supabase): accounts, jobs, notes and files are the same on every device ---------- */
+  var SB=(function(){
+    var SKEY='printease.session',sess=null,SYN={a:{},j:{},n:{}},VER={},chain=Promise.resolve(),pushT=0,lastSig='',online=true;
+    var pendingRender=false,ticking=false,needRestore=false,refreshing=null;
+    if(CLOUD){try{sess=JSON.parse(localStorage.getItem(SKEY)||'null')}catch(e){sess=null}}
+    function saveSess(){try{if(sess)localStorage.setItem(SKEY,JSON.stringify(sess));else localStorage.removeItem(SKEY)}catch(e){}}
+    function setSess(r){sess={access_token:r.access_token,refresh_token:r.refresh_token,expires_at:r.expires_at||Math.floor(Date.now()/1000)+(r.expires_in||3600),user:r.user||(sess&&sess.user)};saveSess();return sess}
+    function uid(){return sess&&sess.user?sess.user.id:null}
+    function errOf(r,t){var j=null;try{j=JSON.parse(t)}catch(e){}var m=(j&&(j.msg||j.message||j.error_description||j.error))||t||('Request failed ('+r.status+')');var e=new Error(m);e.status=r.status;e.code=(j&&(j.error_code||j.code||j.error))||'';return e}
+    function hdr(h,json){var o={apikey:CFG.key,Authorization:'Bearer '+(sess?sess.access_token:CFG.key)};if(json!==false)o['Content-Type']='application/json';for(var k in h)o[k]=h[k];return o}
+    function refresh(){
+      if(refreshing)return refreshing;
+      if(!sess||!sess.refresh_token)return Promise.reject(Object.assign(new Error('No session'),{status:401}));
+      refreshing=fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:CFG.key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:sess.refresh_token})})
+        .then(function(r){return r.text().then(function(t){if(!r.ok)throw errOf(r,t);return setSess(JSON.parse(t))})})
+        .then(function(s){refreshing=null;return s},function(e){refreshing=null;throw e});
+      return refreshing;
+    }
+    function fresh(){if(sess&&sess.expires_at&&sess.expires_at*1000-Date.now()<60000)return refresh().catch(function(){});return Promise.resolve()}
+    /* one request: JSON in, JSON out, one automatic retry after a token refresh */
+    function call(method,path,body,extra,retry){
+      return fresh().then(function(){return fetch(BASE+path,{method:method,headers:hdr(extra),body:body===undefined?undefined:JSON.stringify(body)})}).then(function(r){
+        return r.text().then(function(t){
+          if(r.status===401&&sess&&!retry)return refresh().then(function(){return call(method,path,body,extra,true)});
+          if(!r.ok)throw errOf(r,t);
+          if(!t)return null;
+          try{return JSON.parse(t)}catch(e){return t}
+        });
+      });
+    }
+    function msg(e){
+      var m=((e&&e.message)||'')+'',c=(e&&e.code)||'',x=m+' '+c;
+      if(!e||e.status===undefined)return 'Cannot reach the server. Check your internet connection and try again.';
+      if(/invalid login|invalid_credentials/i.test(x))return 'Email or password is incorrect.';
+      if(/not confirmed/i.test(x))return 'Confirm your email first. Check your inbox, then sign in.';
+      if(/already registered|user_already_exists|already been registered/i.test(x))return 'An account with this email already exists. Sign in instead.';
+      if(e.status===429||/rate limit|over_email_send_rate_limit|too many/i.test(x))return 'Too many attempts. Wait a few minutes and try again.';
+      if(/weak_password|password.*(short|weak|at least)/i.test(x))return 'Use a stronger password with at least 8 characters.';
+      if(/signup.*disabled|signups not allowed/i.test(x))return 'Sign-ups are turned off in Supabase.';
+      if(e.setup||e.status===404||/does not exist|schema cache/i.test(m))return 'The shared database is not set up yet. Run supabase_setup.sql in Supabase first.';
+      return m||'Something went wrong. Try again.';
+    }
+    /* ----- sign in / sign up ----- */
+    function signUp(email,pw,name,type){return call('POST','/auth/v1/signup',{email:email,password:pw,data:{name:name,type:type}}).then(function(r){if(r&&r.access_token){setSess(r);return {session:true}}return {session:false}})}
+    function signIn(email,pw){return call('POST','/auth/v1/token?grant_type=password',{email:email,password:pw}).then(function(r){setSess(r);return r})}
+    function signOut(){var tok=sess&&sess.access_token;sess=null;saveSess();if(tok)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:CFG.key,Authorization:'Bearer '+tok}}).catch(function(){})}
+    function setPassword(pw){return call('PUT','/auth/v1/user',{password:pw})}
+    function rest(method,table,q,body,prefer){return call(method,'/rest/v1/'+table+(q?'?'+q:''),body,prefer?{Prefer:prefer}:undefined)}
+    function ticket(){return call('POST','/rest/v1/rpc/next_ticket',{}).then(function(t){return String(t)})}
+    /* ----- files and pictures ----- */
+    function sraw(method,path,body,type){return fresh().then(function(){var h=hdr({},false);if(type)h['Content-Type']=type;if(method==='POST')h['x-upsert']='true';return fetch(BASE+'/storage/v1/object/'+path,{method:method,headers:h,body:body})})}
+    function upload(bucket,path,blob){return sraw('POST',bucket+'/'+path,blob,blob.type||'application/octet-stream').then(function(r){return r.text().then(function(t){if(!r.ok)throw errOf(r,t);return true})})}
+    function download(path){return sraw('GET','authenticated/print-files/'+path).then(function(r){if(r.status===404||r.status===400)return null;if(!r.ok)throw new Error('download failed');return r.blob()})}
+    function removeObj(bucket,path){return sraw('DELETE',bucket+'/'+path).catch(function(){})}
+    function putImage(kind,dataUrl){
+      return fetch(dataUrl).then(function(r){return r.blob()}).then(function(b){
+        var path=uid()+'/'+kind+'-'+Date.now().toString(36);
+        return upload('profile-images',path,b).then(function(){return BASE+'/storage/v1/object/public/profile-images/'+path});
+      });
+    }
+    function dropImage(url){var m=/\/profile-images\/(.+)$/.exec(url||'');if(m&&String(url).indexOf(BASE)===0)removeObj('profile-images',m[1])}
+    /* ----- keeping this device and the database in step ----- */
+    function canon(v){if(v===null||typeof v!=='object')return JSON.stringify(v);if(Array.isArray(v))return '['+v.map(canon).join(',')+']';return '{'+Object.keys(v).sort().filter(function(k){return v[k]!==undefined}).map(function(k){return JSON.stringify(k)+':'+canon(v[k])}).join(',')+'}'}
+    function aDoc(a){var c={};for(var k in a)if(k!=='id'&&k!=='type'&&k!=='sample'&&k!=='pw'&&k!=='pw0')c[k]=a[k];return c}
+    function jDoc(j){var c={};for(var k in j)if(k!=='preview')c[k]=j[k];return c}
+    function nDoc(n){var c={};for(var k in n)if(k!=='id'&&k!=='to')c[k]=n[k];return c}
+    function fromP(r){var a=Object.assign({},r.data);a.id=r.id;a.type=r.type;return a}
+    function fromJ(r){var j=Object.assign({},r.data);j.id=r.id;j.ownerId=r.owner_id;j.shop=r.shop;j.status=r.status;return j}
+    function fromN(r){var n=Object.assign({},r.data);n.id=r.id;n.to=r.to_id;return n}
+    function adopt(into,from,keep){Object.keys(into).forEach(function(k){if(k!==keep)delete into[k]});for(var k2 in from)into[k2]=from[k2];return into}
+    /* local list + server rows -> new local list. Local edits not yet sent are kept; objects are updated in place. */
+    function merge(list,rows,from,doc,key){
+      var S_=SYN[key],byId={},seen={},out=[];
+      list.forEach(function(x){byId[x.id]=x});
+      rows.forEach(function(r){
+        var s=from(r),id=s.id,loc=byId[id];seen[id]=1;
+        if(loc){
+          var dirty=S_[id]!==undefined&&canon(doc(loc))!==S_[id];
+          if(!dirty){adopt(loc,s,'preview');S_[id]=canon(doc(s));if(key==='j')VER[id]=r.ver}
+          out.push(loc);
+        }else{
+          if(S_[id]!==undefined)return;                 /* deleted on this device, the delete is on its way */
+          S_[id]=canon(doc(s));if(key==='j')VER[id]=r.ver;
+          out.push(s);
+        }
+      });
+      list.forEach(function(x){
+        if(seen[x.id])return;
+        if(S_[x.id]===undefined)out.push(x);            /* new on this device, not sent yet */
+        else{delete S_[x.id];if(key==='j')delete VER[x.id]}  /* gone from the database */
+      });
+      return out;
+    }
+    function pull(){
+      var id=uid();if(!id)return Promise.resolve(false);
+      return Promise.all([
+        rest('GET','profiles','select=*&order=created_at.asc'),
+        rest('GET','jobs','select=*&order=created_at.desc&limit=500'),
+        rest('GET','notes','select=*&to_id=eq.'+id+'&order=created_at.desc&limit=60')
+      ]).then(function(r){
+        var sig=JSON.stringify(r),changed=sig!==lastSig;lastSig=sig;
+        D.accounts=merge(D.accounts,r[0]||[],fromP,aDoc,'a');
+        D.jobs=merge(D.jobs,r[1]||[],fromJ,jDoc,'j');
+        D.notes=merge(D.notes,r[2]||[],fromN,nDoc,'n').sort(function(a,b){return (b.t||0)-(a.t||0)});
+        setOnline(true);return changed;
+      });
+    }
+    function conflict(id){
+      return rest('GET','jobs','id=eq.'+encodeURIComponent(id)+'&select=*').then(function(rows){
+        var loc=D.jobs.filter(function(j){return j.id===id})[0];
+        if(rows&&rows[0]){var s=fromJ(rows[0]);if(loc)adopt(loc,s,'preview');else D.jobs.push(s);SYN.j[id]=canon(jDoc(s));VER[id]=rows[0].ver;toast('Someone else just updated '+(s.name||id)+'. Showing the latest version.')}
+        else{D.jobs=D.jobs.filter(function(j){return j.id!==id});delete SYN.j[id];delete VER[id];toast('That job is no longer available.')}
+        pendingRender=true;
+      });
+    }
+    function push(id){
+      id=id||uid();if(!id)return Promise.resolve();
+      var ops=[],a=acct(id);
+      if(a){var sa=canon(aDoc(a));if(sa!==SYN.a[id])ops.push(rest('PATCH','profiles','id=eq.'+id,{data:aDoc(a)}).then(function(){SYN.a[id]=sa}))}
+      D.jobs.forEach(function(j){
+        var d=jDoc(j),s=canon(d),old=SYN.j[j.id];
+        if(old===s)return;
+        if(old===undefined)ops.push(rest('POST','jobs','',{id:j.id,owner_id:j.ownerId,shop:j.shop,status:j.status,data:d},'return=representation').then(function(rows){SYN.j[j.id]=s;VER[j.id]=rows&&rows[0]?rows[0].ver:1}));
+        else ops.push(rest('PATCH','jobs','id=eq.'+encodeURIComponent(j.id)+'&ver=eq.'+VER[j.id],{shop:j.shop,status:j.status,data:d},'return=representation').then(function(rows){if(rows&&rows.length){SYN.j[j.id]=s;VER[j.id]=rows[0].ver}else return conflict(j.id)}));
+      });
+      Object.keys(SYN.j).forEach(function(jid){
+        if(!D.jobs.some(function(j){return j.id===jid}))ops.push(rest('DELETE','jobs','id=eq.'+encodeURIComponent(jid)).then(function(){delete SYN.j[jid];delete VER[jid]}));
+      });
+      D.notes.forEach(function(n){
+        var d=nDoc(n),s=canon(d),old=SYN.n[n.id];
+        if(old===s)return;
+        if(old===undefined)ops.push(rest('POST','notes','',{id:n.id,to_id:n.to,data:d},'return=minimal').then(function(){SYN.n[n.id]=s}));
+        else if(n.to===id)ops.push(rest('PATCH','notes','id=eq.'+encodeURIComponent(n.id),{data:d},'return=minimal').then(function(){SYN.n[n.id]=s}));
+      });
+      if(!ops.length)return Promise.resolve();
+      return Promise.all(ops.map(function(p){return p.then(function(){return null},function(e){return e||new Error('failed')})})).then(function(res){
+        var errs=res.filter(Boolean);
+        errs.forEach(function(e){try{console.warn('PrintEase sync:',e.message)}catch(x){}});
+        setOnline(!errs.some(function(e){return e.status===undefined}));
+      });
+    }
+    function enqueue(fn){var p=chain.then(fn);chain=p.catch(function(){});return p}
+    function schedule(){if(!uid()||!D.userId)return;clearTimeout(pushT);pushT=setTimeout(function(){enqueue(function(){return push()}).catch(function(){})},150)}
+    function setOnline(v){if(v===online)return;online=v;toast(v?'Back online. Your changes are synced.':'Cannot reach the server. Your changes will sync when the connection returns.')}
+    function userBusy(){
+      if(S.modal)return true;
+      var a=document.activeElement,v=$('#view');
+      if(a&&v&&v.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return true;
+      return ['#pwForm','#rateForm','#authForm'].some(function(sel){var f=$(sel);return f&&Array.prototype.some.call(f.querySelectorAll('input'),function(i){return i.type!=='submit'&&i.value!==i.defaultValue})});
+    }
+    function tick(){
+      if(ticking||document.hidden)return;
+      if(!D.userId){if(needRestore&&sess){needRestore=false;boot().then(function(){render()})}return}
+      ticking=true;
+      enqueue(function(){return push()}).then(function(){return enqueue(function(){return pull()})}).then(function(ch){
+        if(ch)pendingRender=true;
+        if(pendingRender&&!userBusy()){pendingRender=false;render()}
+      }).catch(function(e){if(e&&e.status===undefined)setOnline(false)}).then(function(){ticking=false});
+    }
+    function resetData(){D.accounts=[];D.jobs=[];D.notes=[];SYN={a:{},j:{},n:{}};VER={};lastSig='';pendingRender=false}
+    /* after a successful sign-in: load everything and return the person's account */
+    function enter(){
+      resetData();
+      return pull().then(function(){
+        var a=acct(uid());
+        if(!a)throw Object.assign(new Error('The shared database is not set up yet. Run supabase_setup.sql in Supabase first.'),{status:404,setup:true});
+        return a;
+      });
+    }
+    function restore(){
+      return fresh().then(function(){return pull()}).then(function(){
+        var id=uid();
+        if(!acct(id))throw Object.assign(new Error('profile'),{status:403,noprofile:true});
+        D.userId=id;needRestore=false;return true;
+      });
+    }
+    function boot(){
+      return restore().then(function(){S.page='dashboard'},function(e){
+        if(e&&(e.status===400||e.status===401||e.status===403)){sess=null;saveSess()}
+        else needRestore=true;
+      });
+    }
+    function logout(){
+      var id=uid();
+      var flush=Promise.race([enqueue(function(){return push(id)}).catch(function(){}),new Promise(function(res){setTimeout(res,2500)})]);
+      return flush.then(function(){signOut();resetData()});
+    }
+    function start(){
+      setInterval(tick,4000);
+      document.addEventListener('visibilitychange',function(){if(!document.hidden)tick()});
+      window.addEventListener('focus',tick);
+      window.addEventListener('online',tick);
+    }
+    return {on:CLOUD,msg:msg,signUp:signUp,signIn:signIn,setPassword:setPassword,ticket:ticket,upload:upload,download:download,removeObj:removeObj,
+      putImage:putImage,dropImage:dropImage,schedule:schedule,enter:enter,logout:logout,boot:boot,start:start,hasSession:function(){return !!sess},uid:uid};
+  })();
+
+  /* ---------- real files: with the shared database they live online; otherwise in this browser (IndexedDB) ---------- */
   var FILES=(function(){
     var mem={},dbp=null;
     function db(){
@@ -732,10 +938,10 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     }
     function tx(mode,fn){return db().then(function(d){return new Promise(function(res,rej){var t=d.transaction('f',mode),r=fn(t.objectStore('f'));t.oncomplete=function(){res(r&&r.result)};t.onerror=function(){rej(t.error)};t.onabort=function(){rej(t.error)}})})}
     return{
-      put:function(id,blob){mem[id]=blob;return tx('readwrite',function(st){return st.put(blob,id)}).catch(function(){})},
-      get:function(id){if(mem[id])return Promise.resolve(mem[id]);return tx('readonly',function(st){return st.get(id)}).then(function(b){return b||null}).catch(function(){return null})},
-      del:function(id){delete mem[id];return tx('readwrite',function(st){return st.delete(id)}).catch(function(){})},
-      clear:function(){mem={};return tx('readwrite',function(st){return st.clear()}).catch(function(){})}
+      put:function(id,blob,owner){mem[id]=blob;if(CLOUD)return SB.upload('print-files',owner+'/'+id,blob).catch(function(e){delete mem[id];throw e});return tx('readwrite',function(st){return st.put(blob,id)}).catch(function(){})},
+      get:function(id,owner){if(mem[id])return Promise.resolve(mem[id]);if(CLOUD)return SB.download(owner+'/'+id).then(function(b){if(b)mem[id]=b;return b||null});return tx('readonly',function(st){return st.get(id)}).then(function(b){return b||null}).catch(function(){return null})},
+      del:function(id,owner){delete mem[id];if(CLOUD)return SB.removeObj('print-files',owner+'/'+id);return tx('readwrite',function(st){return st.delete(id)}).catch(function(){})},
+      clear:function(){mem={};if(CLOUD)return Promise.resolve();return tx('readwrite',function(st){return st.clear()}).catch(function(){})}
     };
   })();
   function zipRead(buf){
@@ -877,7 +1083,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     S.fc=S.fc||{};
     if(!j||!j.hasFile||S.fc[j.id])return;
     S.fc[j.id]={k:'load'};
-    FILES.get(j.id).then(function(b){
+    FILES.get(j.id,j.ownerId).then(function(b){
       if(!b)return {k:'none'};
       var n=j.name||'',t=(b.type||j.type||'').toLowerCase(),isPdf=t==='application/pdf'||/\.pdf$/i.test(n);
       var u=URL.createObjectURL(isPdf&&t!=='application/pdf'?new Blob([b],{type:'application/pdf'}):b);
@@ -969,6 +1175,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
   function go(p){S.page=p;S.err='';S.bell=false;S.modal=null;S.editing=false;S.pf=null;S.paying=false;S.pwMsg=null;S.rateMsg=null;if(p==='login'||p==='signup'){S.vals={name:'',email:'',type:'client'}}window.scrollTo(0,0);render()}
   function login(a){D.userId=a.id;S.err='';S.vals={name:'',email:'',type:'client'};S.tab={client:'upload',shop:'queue',admin:'all'};go('dashboard');toast('Signed in as '+a.name)}
   function fail(m,v){S.err=m;S.vals=v||S.vals;render()}
+  function busy(f){var b=f.querySelector('button[type="submit"]');if(b){b.disabled=true;b.textContent='Please wait…'}}
 
   /* ---------- events ---------- */
   function refocus(id,pos){var n=document.getElementById(id);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}}}
@@ -993,7 +1200,11 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
       var f=py.files[0],u=me();if(!f||!u)return;
       if(!/^image\//.test(f.type)){toast('Choose an image file');return}
       if(f.size>1500000){toast('Choose an image under 1.5 MB');return}
-      var r=new FileReader();r.onload=function(){u.pay=r.result;render();toast('Payment image saved')};r.readAsDataURL(f);
+      var r=new FileReader();r.onload=function(){
+        if(!CLOUD){u.pay=r.result;render();toast('Payment image saved');return}
+        toast('Uploading…');
+        SB.putImage('payment',r.result).then(function(url){var old=u.pay;u.pay=url;render();toast('Payment image saved');SB.dropImage(old)}).catch(function(e){toast('Could not upload the image. '+SB.msg(e))});
+      };r.readAsDataURL(f);
     });
     var pi=$('#pfImg');
     if(pi)pi.addEventListener('change',function(){
@@ -1008,9 +1219,9 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     if(!b){if(S.bell&&!e.target.closest('.panel')){S.bell=false;renderNav()}return}
     var act=b.dataset.act,id=b.dataset.id,u=me();
     if(act==='go'){go(b.dataset.p);return}
-    if(act==='logout'){D.userId=null;S.bell=false;S.drafts.forEach(function(){});go('home');toast('Signed out');return}
+    if(act==='logout'){if(CLOUD){SB.logout().then(function(){D.userId=null;S.bell=false;S.fc={};go('home');toast('Signed out')});return}D.userId=null;S.bell=false;S.drafts.forEach(function(){});go('home');toast('Signed out');return}
     if(act==='ratebase'){var rb=me();if(rb&&rb.type==='shop'){rb.rate=BASE_RATE;S.rateMsg={ok:true,t:'Price reset to ₱'+BASE_RATE+' per page.'};render();toast('Price reset')}return}
-    if(act==='quick'){var qa=acct(id);if(qa)login(qa);return}
+    if(act==='quick'){if(CLOUD)return;var qa=acct(id);if(qa)login(qa);return}
     if(act==='togglepw'){var inp=document.getElementById(b.dataset.t);if(inp){var show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show'}return}
     if(act==='bell'){S.bell=!S.bell;if(!S.bell)D.notes.forEach(function(n){if(u&&n.to===u.id)n.read=true});render();return}
     if(act==='tab'){S.tab[b.dataset.r]=b.dataset.t;render();return}
@@ -1018,13 +1229,24 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     if(act==='rmdraft'){S.drafts=S.drafts.filter(function(d){return d.id!==id});render();return}
     if(act==='queue'){
       var d=S.drafts.filter(function(x){return x.id===id})[0];if(!d)return;
+      if(CLOUD){
+        if(d.busy)return;
+        if(d.file&&d.file.size>50*1024*1024){toast('This file is over 50 MB. Choose a smaller file.');return}
+        d.busy=true;toast('Submitting…');
+        SB.ticket().then(function(tk){return (d.file?FILES.put(tk,d.file,D.userId):Promise.resolve()).then(function(){return tk})}).then(function(tk){
+          D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file});
+          S.drafts=S.drafts.filter(function(x){return x.id!==id});
+          S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');
+        }).catch(function(e){d.busy=false;toast('Could not submit. '+SB.msg(e))});
+        return;
+      }
       var tk='PE-'+pad(++D.seq);
       D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file});
       if(d.file)FILES.put(tk,d.file);
       S.drafts=S.drafts.filter(function(x){return x.id!==id});
       S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');return;
     }
-    if(act==='deljob'){D.jobs=D.jobs.filter(function(j){return j.id!==id});FILES.del(id);if(S.fc&&S.fc[id]){try{URL.revokeObjectURL(S.fc[id].u)}catch(er){}delete S.fc[id]}render();toast('Print job deleted');return}
+    if(act==='deljob'){var dj0=D.jobs.filter(function(j){return j.id===id})[0];D.jobs=D.jobs.filter(function(j){return j.id!==id});FILES.del(id,dj0&&dj0.ownerId);if(S.fc&&S.fc[id]){try{URL.revokeObjectURL(S.fc[id].u)}catch(er){}delete S.fc[id]}render();toast('Print job deleted');return}
     if(act==='st'){var j=D.jobs.filter(function(x){return x.id===id})[0];if(j){setStatus(j,b.dataset.s);render()}return}
     if(act==='decline'){
       var dj=D.jobs.filter(function(x){return x.id===id})[0];if(!dj)return;
@@ -1042,7 +1264,9 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
       if(!nm||!em){S.err='Name and email are required.';render();return}
       if(!/^\S+@\S+\.\S+$/.test(em)){S.err='Enter a valid email address.';render();return}
       if(D.accounts.some(function(a){return a.id!==u.id&&a.email===em})){S.err='Another account already uses this email.';render();return}
-      u.name=nm;u.email=em;u.quote=p.quote.trim();u.img=p.img;S.editing=false;S.pf=null;S.err='';render();toast('Profile saved');return;
+      var finish=function(img){u.name=nm;u.email=em;u.quote=p.quote.trim();u.img=img;S.editing=false;S.pf=null;S.err='';render();toast('Profile saved')};
+      if(CLOUD&&/^data:/.test(p.img)){toast('Saving…');var oldi=u.img;SB.putImage('avatar',p.img).then(function(url){finish(url);SB.dropImage(oldi)}).catch(function(e){S.err='Could not upload the photo. '+SB.msg(e);render()});return}
+      finish(p.img);return;
     }
     if(act==='shopview'){S.page='shop-view';window.scrollTo(0,0);render();return}
     if(act==='viewprofile'){S.viewId=id;S.page='profile-detail';S.paying=false;window.scrollTo(0,0);render();return}
@@ -1051,10 +1275,10 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
       try{navigator.clipboard.writeText(v).then(function(){toast('Email copied')},function(){toast('Select the email and copy it')})}catch(er){toast('Select the email and copy it')}
       return;
     }
-    if(act==='removepay'){if(u){u.pay='';render();toast('Payment image removed')}return}
+    if(act==='removepay'){if(u){var oldp=u.pay;u.pay='';if(CLOUD)SB.dropImage(oldp);render();toast('Payment image removed')}return}
     if(act==='pay'){S.paying=true;render();return}
     if(act==='paycancel'){S.paying=false;render();return}
-    if(act==='reset'){try{localStorage.removeItem(KEY)}catch(er){}FILES.clear();S.fc={};D=seed();S.drafts=[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];go('home');toast('Sample data restored');return}
+    if(act==='reset'){if(CLOUD){toast('Not available when the shared database is on');return}try{localStorage.removeItem(KEY)}catch(er){}FILES.clear();S.fc={};D=seed();S.drafts=[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];go('home');toast('Sample data restored');return}
   });
   document.addEventListener('input',function(e){
     var t=e.target;
@@ -1101,11 +1325,16 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
       e.preventDefault();
       var pu=me(),cur=$('#pw-cur').value,nw=$('#pw-new').value,nw2=$('#pw-new2').value,pm='';
       if(!cur||!nw||!nw2)pm='Fill in all three fields.';
-      else if(cur!==pu.pw)pm='Your current password is incorrect.';
+      else if(!CLOUD&&cur!==pu.pw)pm='Your current password is incorrect.';
       else if(nw.length<8)pm='Use a password with at least 8 characters.';
       else if(nw===cur)pm='Choose a password different from your current one.';
       else if(nw!==nw2)pm='The new passwords do not match.';
       if(pm){S.pwMsg={ok:false,t:pm};render();return}
+      if(CLOUD){
+        SB.signIn(pu.email,cur).then(function(){return SB.setPassword(nw)}).then(function(){S.pwMsg={ok:true,t:'Password updated. Use it the next time you sign in.'};render();toast('Password updated')})
+          .catch(function(e){S.pwMsg={ok:false,t:/invalid|credentials/i.test(e&&e.message||'')?'Your current password is incorrect.':SB.msg(e)};render()});
+        return;
+      }
       pu.pw=nw;S.pwMsg={ok:true,t:'Password updated. Use it the next time you sign in.'};render();toast('Password updated');return;
     }
     if(f.id!=='authForm')return;
@@ -1117,10 +1346,24 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
       if(!/^\S+@\S+\.\S+$/.test(em))return fail('Enter a valid email address.',v);
       if(pw.length<8)return fail('Use a password with at least 8 characters.',v);
       if(pw!==pw2)return fail('The two passwords do not match.',v);
+      if(CLOUD){
+        busy(f);
+        SB.signUp(em,pw,nm,ty).then(function(r){
+          if(!r.session)return fail('Account created. Check your email to confirm it, then sign in.',{name:'',email:em,type:'client'});
+          return SB.enter().then(login);
+        }).catch(function(e){fail(SB.msg(e),v)});
+        return;
+      }
       if(D.accounts.some(function(x){return x.email===em}))return fail('An account with this email already exists. Sign in instead.',v);
       a={id:'u'+Date.now().toString(36),name:nm,email:em,pw:pw,type:ty,quote:'',img:''};
       D.accounts.push(a);login(a);
     }else{
+      if(CLOUD){
+        if(!em||!pw)return fail('Enter your email and password.',{name:'',email:em,type:'client'});
+        busy(f);
+        SB.signIn(em,pw).then(function(){return SB.enter()}).then(login).catch(function(e){fail(SB.msg(e),{name:'',email:em,type:'client'})});
+        return;
+      }
       a=D.accounts.filter(function(x){return x.email===em&&x.pw===pw})[0];
       if(!a)return fail('Email or password is incorrect.',{name:'',email:em,type:'client'});
       login(a);
@@ -1132,8 +1375,15 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     else if(S.bell){S.bell=false;renderNav()}
   });
 
-  render();
+  if(CLOUD){
+    SB.start();
+    if(SB.hasSession()){
+      $('#view').innerHTML='<p class="sub" style="text-align:center;padding:48px 0">Loading your data…</p>';
+      SB.boot().then(render);
+    }else render();
+  }else render();
 })();
 </script>
+
 </body>
 </html
