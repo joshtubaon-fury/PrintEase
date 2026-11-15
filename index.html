@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  
-<title>PrintEase</title>
+  <title>PrintEase</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
 /* Layout: persistent top bar, one page at a time (home, auth, dashboards, profiles) over a shared print queue */
@@ -357,7 +356,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     <div class="nav" id="nav"></div>
   </header>
   <main id="view"></main>
-  <footer class="sitefoot" id="sitefoot"><b>PrintEase</b> · Shared printing workflow</footer>
+  <footer class="sitefoot" id="sitefoot"><b>System in Progress</b>, &ldquo;All Rights Reserved&rdquo;</footer>
   <p class="footnote" hidden>Sample data and sample rates. Sign-in, payments and email are simulated in this page. <button class="link" data-act="reset">Reset sample data</button></p>
 </div>
 <div id="modal"></div>
@@ -488,15 +487,15 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3400)}
 
   /* ---------- notifications and status flow ---------- */
-  function notify(j,text){D.notes.unshift({id:CLOUD?'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7):D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false})}
+  function notify(j,text,email){D.notes.unshift({id:CLOUD?'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7):D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false,email:email||''})}
   function setStatus(j,s){
     var sh=me(),shn=sh?sh.name:shopName(j.shop),o=acct(j.ownerId),first=o?o.name.split(' ')[0]:'Owner';
     if(s==='queued'){if(j.shop==='any')j.shop=sh.id;j.rate=priceOf(j.shop,j.paper,j.color);j.rv=2;notify(j,j.name+' was accepted by '+shn+' and is queued. Total amount to pay: '+peso(cost(j))+' ('+j.pages+(j.pages===1?' page':' pages')+' × '+j.copies+(j.copies===1?' copy':' copies')+' × '+peso(j.rate)+' per '+paperDef(j.paper).k+' '+modeName(j.color)+' page). Payment first is required. Check the shop\'s profile.')}
     if(s==='printing')notify(j,j.name+' is now printing at '+shn+'.');
-    if(s==='completed'){j.doneAt=Date.now();notify(j,j.name+' is complete and ready for pickup at '+shn+'. Show ticket '+j.id+'.')}
+    if(s==='completed'){j.doneAt=Date.now();notify(j,j.name+' is complete and ready for pickup at '+shn+'. Show ticket '+j.id+'.',o?o.email:'')}
     if(s==='declined')notify(j,j.name+' was declined by '+shn+'. Check the file and send it again.');
     j.status=s;
-    toast(s==='completed'?first+' notified in the app':first+' notified: '+ST[s].toLowerCase());
+    toast(s==='completed'?first+' notified in the app and by email':first+' notified: '+ST[s].toLowerCase());
   }
 
   /* ---------- top bar ---------- */
@@ -518,7 +517,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   }
   function notePanel(u){
     var m=D.notes.filter(function(n){return n.to===u.id}).slice(0,8);
-    return '<div class="panel" role="dialog" aria-label="Notifications"><h3>Notifications</h3>'+(m.length?m.map(function(n){return '<div class="note'+(n.read?'':' unread')+'"><div>'+esc(n.text)+'<time>'+fmtT(n.t)+'</time></div></div>'}).join(''):'<div class="empty">No notifications yet.</div>')+'</div>';
+    return '<div class="panel" role="dialog" aria-label="Notifications"><h3>Notifications</h3>'+(m.length?m.map(function(n){return '<div class="note'+(n.read?'':' unread')+'"><div>'+esc(n.text)+(n.email?'<br><span class="muted">Email sent to '+esc(n.email)+'</span>':'')+'<time>'+fmtT(n.t)+'</time></div></div>'}).join(''):'<div class="empty">No notifications yet.</div>')+'</div>';
   }
 
   /* ---------- pages ---------- */
@@ -695,7 +694,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       h+='<div class="colhead" style="margin-top:6px"><h3>'+esc(g.name)+'</h3><span class="count">'+q.length+'</span></div>';
       h+=q.length?q.map(function(j){return '<div class="job"><div class="job-top"><div style="min-width:0"><div class="fname">'+esc(j.name)+'</div><div class="meta"><span class="mono">'+j.id+'</span> · '+esc(ownerName(j))+' · '+j.pages+' pg × '+j.copies+'</div></div>'+pill(j.status)+'</div><div class="actions"><label class="muted" style="font-size:12.5px" for="mv-'+j.id+'">Send to</label><select id="mv-'+j.id+'" data-move="'+j.id+'">'+opt('any','Any available shop',j.shop)+shops().map(function(s){return opt(s.id,s.name,j.shop)}).join('')+'</select></div></div>'}).join(''):'<div class="empty" style="padding:14px">No pending files here.</div>';
     });
-    h+='</section><section class="card"><h3>Notifications sent</h3><p class="sub">Messages delivered to file owners.</p><ul class="log">'+(D.notes.length?D.notes.slice(0,12).map(function(n){var a=acct(n.to);return '<li><b>'+esc(a?a.name:'Unknown')+'</b> · <span class="mono">'+n.job+'</span><br>'+esc(n.text)+'<time>'+fmtT(n.t)+'</time></li>'}).join(''):'<li class="muted">None yet.</li>')+'</ul></section></div>';
+    h+='</section><section class="card"><h3>Notifications sent</h3><p class="sub">Messages delivered to file owners.</p><ul class="log">'+(D.notes.length?D.notes.slice(0,12).map(function(n){var a=acct(n.to);return '<li><b>'+esc(a?a.name:'Unknown')+'</b> · <span class="mono">'+n.job+'</span><br>'+esc(n.text)+(n.email?'<br><span class="muted">Email sent to '+esc(n.email)+'</span>':'')+'<time>'+fmtT(n.t)+'</time></li>'}).join(''):'<li class="muted">None yet.</li>')+'</ul></section></div>';
     var list=J.filter(function(j){return matchQ(j,S.adminQ,S.adminF)}).sort(function(a,b){return b.t-a.t});
     var accs=D.accounts.filter(function(a){return a.type==='client'||a.type==='shop'});
     if(S.tab.admin==='accounts')h+=accountBar(); else h+=filterBar('adminQ','adminF',S.adminQ,S.adminF,'Search all jobs by file name, client name or email');
