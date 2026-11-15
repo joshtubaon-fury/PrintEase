@@ -6,8 +6,6 @@
 </head>
 <body>
   
-
-
 <title>PrintEase</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -48,11 +46,15 @@
   --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:0;min-height:100vh;display:flex;flex-direction:column}
 h1,h2,h3{font-family:var(--font-display);margin:0;line-height:1.15;text-wrap:balance}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:1180px;margin-inline:auto}
+.wrap{max-width:1180px;margin-inline:auto;width:100%;flex:1 0 auto;display:flex;flex-direction:column}
+.wrap>main{flex:1 0 auto}
+.sitefoot{margin-top:36px;padding:18px 8px 24px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--muted)}
+.sitefoot b{color:var(--ink);font-weight:600}
+.acc .job-top{align-items:center}.acc .who{display:flex;gap:12px;align-items:center;min-width:0}
 .mono{font-family:var(--font-mono);font-size:12.5px;letter-spacing:.02em}
 .muted{color:var(--muted)}
 .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -206,7 +208,11 @@ button,input,select,textarea{font:inherit;color:inherit}
 .pcard{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 .pcard h3{font-size:17px}
 .pcard .muted{font-size:13px;overflow-wrap:anywhere}
-.pricegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.pricerows{display:flex;flex-direction:column;gap:12px}
+.pricerow{display:grid;grid-template-columns:minmax(170px,1.3fr) 1fr 1fr;gap:10px;align-items:end;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.pricerow b{align-self:center}
+.pricerow .field input{width:100%}
+@media(max-width:560px){.pricerow{grid-template-columns:1fr 1fr}.pricerow b{grid-column:1/-1}}
 .quote{padding:12px 14px;background:var(--surface-2);border-radius:10px;font-style:italic;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
 .kv{display:grid;grid-template-columns:130px minmax(0,1fr);gap:6px 12px;font-size:14px;margin:0}
 .kv dt{color:var(--muted)}
@@ -299,6 +305,12 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
 .mhead{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .mhead b{font-family:var(--font-display);font-size:17px;display:block;line-height:1.1}
 .mhead small{color:var(--muted);font-size:12px}
+.autop{margin:12px 0 0;padding:9px 12px;border-radius:10px;background:var(--cy-soft);font-size:13px;font-weight:600}
+.acchead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.acchead h3{margin:0}
+.accmini{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.accmini .who{flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.accmini .fname,.accmini .meta{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .printbox{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:14px}
 .printbox h4{font-family:var(--font-display);font-size:15px;margin:0 0 4px;display:flex;align-items:center;gap:8px}
 .printbox p{margin:0 0 10px;font-size:13px;color:var(--muted)}
@@ -321,6 +333,8 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
   html,body{background:#fff!important}
   #printRoot{display:block!important;color:#000;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #printRoot>img{display:block;max-width:100%;max-height:100vh;margin:0 auto;object-fit:contain;page-break-inside:avoid}
+  #printRoot>img.pdfpg{width:100%;height:98vh;max-height:none;break-after:page;page-break-after:always}
+  #printRoot>img.pdfpg:last-child{break-after:auto;page-break-after:auto}
   #printRoot .docx{font:11pt/1.4 Calibri,Arial,sans-serif;color:#000}
   #printRoot .docx hr.pb{border:0;margin:0;page-break-after:always}
   #printRoot .docx tr,#printRoot .docx img{page-break-inside:avoid}
@@ -343,7 +357,8 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
     <div class="nav" id="nav"></div>
   </header>
   <main id="view"></main>
-  <p class="footnote" hidden>Payments and email delivery are not processed by this page. Notifications are in-app only. <button class="link" data-act="reset">Reset sample data</button></p>
+  <footer class="sitefoot" id="sitefoot"><b>PrintEase</b> · Shared printing workflow</footer>
+  <p class="footnote" hidden>Sample data and sample rates. Sign-in, payments and email are simulated in this page. <button class="link" data-act="reset">Reset sample data</button></p>
 </div>
 <div id="modal"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -351,7 +366,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
 <script>
 /* ===== Shared database (Supabase) =====
    Leave both values empty to run the single-device demo (data stays in this browser).
-   Configured for the supplied Supabase project. Use only a publishable/anon key here; never place a service_role or secret key in browser code. */
+   Paste your Supabase Project URL and anon public key between the quotes to share data across every device. */
 window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaoghjjlpisjt.supabase.co", key: "sb_publishable_qdiMRhQs_EYHhwYy-mf29w_Gh7wHa7P" };
 </script>
 <script>
@@ -428,7 +443,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     }catch(e){}
   }
   D=CLOUD?{v:3,accounts:[],jobs:[],notes:[],seq:0,nseq:0,userId:null}:load();
-  var S={page:D.userId?'dashboard':'home',tab:{client:'upload',shop:'queue',admin:'all'},drafts:[],bell:false,modal:null,err:'',vals:{name:'',email:'',type:'client'},
+  var S={page:D.userId?'dashboard':'home',accQ:'',accF:'all',tab:{client:'upload',shop:'queue',admin:'all'},drafts:[],bell:false,modal:null,err:'',vals:{name:'',email:'',type:'client'},
     shopQ:'',shopF:'all',adminQ:'',adminF:'all',profQ:'',profTab:'clients',viewId:null,editing:false,pf:null,paying:false,pwMsg:null};
   S.drafts=CLOUD?[]:[{id:'d1',ownerId:'c1',name:'Thesis_Chapter3_Draft.pdf',size:2480000,type:'application/pdf',pages:48,copies:1,paper:'A4',color:'bw',sides:'double',orient:'portrait',shop:'s1',notes:'Staple top-left.',sample:true,preview:null}];
 
@@ -444,15 +459,19 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   var PAPERS=[{k:'A4',l:'A4 (210 × 297 mm)',w:210,h:297,p:5},{k:'A5',l:'A5 (148 × 210 mm)',w:148,h:210,p:5},{k:'A3',l:'A3 (297 × 420 mm)',w:297,h:420,p:10},{k:'Short',l:'Short (8.5 × 11 in)',w:215.9,h:279.4,p:5},{k:'Long',l:'Long (8.5 × 14 in)',w:215.9,h:355.6,p:5},{k:'F4',l:'F4 (8.5 × 13 in)',w:215.9,h:330.2,p:5},{k:'Tabloid',l:'Tabloid (11 × 17 in)',w:279.4,h:431.8,p:10}];
   var PAPER_OLD={Letter:'Short',Legal:'Long'},PAPER_OLDKEY={Short:'Letter',Long:'Legal'}; /* jobs and prices saved under the old names Letter and Legal still work */
   function paperDef(k){k=PAPER_OLD[k]||k;for(var i=0;i<PAPERS.length;i++)if(PAPERS[i].k===k)return PAPERS[i];return PAPERS[0]}
-  function defaultPrices(){var o={};PAPERS.forEach(function(x){o[x.k]=x.p});return o}
+  function defaultPrices(){var o={};PAPERS.forEach(function(x){o[x.k]={bw:x.p,color:x.p*2}});return o}
   /* price per page of one paper size at one shop; accounts saved before per-size prices keep their old single rate (A3 and Tabloid at double) */
-  function priceOf(shopId,paper){var a=shopId&&shopId!=='any'?acct(shopId):null,d=paperDef(paper);
-    if(a&&a.type==='shop'){var v=a.prices?Number(a.prices[d.k]):NaN;if(!(v>0)&&a.prices&&PAPER_OLDKEY[d.k])v=Number(a.prices[PAPER_OLDKEY[d.k]]);if(v>0)return v;var r=Number(a.rate);if(r>0)return r*(d.p/BASE_RATE)}
-    return d.p}
-  function priceRange(shopId){var lo=1e9,hi=0;PAPERS.forEach(function(x){var v=priceOf(shopId,x.k);if(v<lo)lo=v;if(v>hi)hi=v});return '₱'+lo+(hi>lo?'–₱'+hi:'')}
+  function priceOf(shopId,paper,color){var a=shopId&&shopId!=='any'?acct(shopId):null,d=paperDef(paper),m=color==='color'?'color':'bw';
+    if(a&&a.type==='shop'){
+      var e=a.prices?a.prices[d.k]:undefined;if(e===undefined&&a.prices&&PAPER_OLDKEY[d.k])e=a.prices[PAPER_OLDKEY[d.k]];
+      var v=(e&&typeof e==='object')?Number(e[m]):Number(e);          /* a single number saved before the two price types applies to both */
+      if(v>0)return v;var r=Number(a.rate);if(r>0)return r*(d.p/BASE_RATE)}
+    return m==='color'?d.p*2:d.p}
+  function modeName(c){return c==='color'?'colour':'black-and-white'}
+  function priceRange(shopId){var lo=1e9,hi=0;PAPERS.forEach(function(x){['bw','color'].forEach(function(m){var v=priceOf(shopId,x.k,m);if(v<lo)lo=v;if(v>hi)hi=v})});return '₱'+lo+(hi>lo?'–₱'+hi:'')}
   /* a job keeps the price per page that was set when the shop accepted it; older jobs (no rv) used one rate, doubled for A3 */
-  function cost(o){var r=o.rate>0?o.rate:priceOf(o.shop,o.paper),m=(o.rate>0&&!o.rv&&o.paper==='A3')?2:1;return o.pages*o.copies*r*m}
-  function priceNote(d){var r=priceOf(d.shop,d.paper),n=paperDef(d.paper).k;return d.shop==='any'?'Starting price ₱'+r+' per '+n+' page. The shop that accepts your file sets the final price.':'₱'+r+' per '+n+' page'}
+  function cost(o){var r=o.rate>0?o.rate:priceOf(o.shop,o.paper,o.color),m=(o.rate>0&&!o.rv&&o.paper==='A3')?2:1;return o.pages*o.copies*r*m}
+  function priceNote(d){var r=priceOf(d.shop,d.paper,d.color),n=paperDef(d.paper).k+' '+modeName(d.color);return d.shop==='any'?'Starting price ₱'+r+' per '+n+' page. The shop that accepts your file sets the final price.':'₱'+r+' per '+n+' page'}
   function acct(id){return D.accounts.filter(function(a){return a.id===id})[0]}
   function me(){return D.userId?acct(D.userId):null}
   function shops(){return D.accounts.filter(function(a){return a.type==='shop'})}
@@ -469,15 +488,15 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3400)}
 
   /* ---------- notifications and status flow ---------- */
-  function notify(j,text,email){D.notes.unshift({id:CLOUD?'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7):D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false,email:email||''})}
+  function notify(j,text){D.notes.unshift({id:CLOUD?'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,7):D.nseq++,to:j.ownerId,job:j.id,text:text,t:Date.now(),read:false})}
   function setStatus(j,s){
     var sh=me(),shn=sh?sh.name:shopName(j.shop),o=acct(j.ownerId),first=o?o.name.split(' ')[0]:'Owner';
-    if(s==='queued'){if(j.shop==='any')j.shop=sh.id;j.rate=priceOf(j.shop,j.paper);j.rv=2;notify(j,j.name+' was accepted by '+shn+' and is queued. Total amount to pay: '+peso(cost(j))+' ('+j.pages+(j.pages===1?' page':' pages')+' × '+j.copies+(j.copies===1?' copy':' copies')+' × '+peso(j.rate)+' per '+paperDef(j.paper).k+' page). Payment first is required. Check the shop\'s profile.')}
+    if(s==='queued'){if(j.shop==='any')j.shop=sh.id;j.rate=priceOf(j.shop,j.paper,j.color);j.rv=2;notify(j,j.name+' was accepted by '+shn+' and is queued. Total amount to pay: '+peso(cost(j))+' ('+j.pages+(j.pages===1?' page':' pages')+' × '+j.copies+(j.copies===1?' copy':' copies')+' × '+peso(j.rate)+' per '+paperDef(j.paper).k+' '+modeName(j.color)+' page). Payment first is required. Check the shop\'s profile.')}
     if(s==='printing')notify(j,j.name+' is now printing at '+shn+'.');
-    if(s==='completed'){j.doneAt=Date.now();notify(j,j.name+' is complete and ready for pickup at '+shn+'. Show ticket '+j.id+'.',o?o.email:'')}
+    if(s==='completed'){j.doneAt=Date.now();notify(j,j.name+' is complete and ready for pickup at '+shn+'. Show ticket '+j.id+'.')}
     if(s==='declined')notify(j,j.name+' was declined by '+shn+'. Check the file and send it again.');
     j.status=s;
-    toast(first+' notified in the app: '+ST[s].toLowerCase());
+    toast(s==='completed'?first+' notified in the app':first+' notified: '+ST[s].toLowerCase());
   }
 
   /* ---------- top bar ---------- */
@@ -549,13 +568,13 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   /* --- client --- */
   function myDrafts(){return S.drafts.filter(function(d){return d.ownerId===D.userId})}
   function draftCard(d){
-    var so=opt('any','Any available shop',d.shop)+shops().map(function(s){return opt(s.id,s.name+' · ₱'+priceOf(s.id,d.paper)+' per page',d.shop)}).join('');
+    var so=opt('any','Any available shop',d.shop)+shops().map(function(s){return opt(s.id,s.name+' · ₱'+priceOf(s.id,d.paper,d.color)+' per page',d.shop)}).join('');
     return '<div class="draft" data-draft="'+d.id+'"><div class="draft-top"><div><div class="fname">'+esc(d.name)+'</div><div class="muted" style="font-size:12.5px">'+fmtSize(d.size)+(d.sample?' · sample file':'')+'</div></div><button class="btn sm bad" data-act="rmdraft" data-id="'+d.id+'">Remove</button></div><div class="opts">'+
       '<label class="field pw">Paper size<select data-f="paper">'+PAPERS.map(function(x){return opt(x.k,x.l,paperDef(d.paper).k)}).join('')+'</select></label>'+
       '<label class="field">Colour<select data-f="color">'+opt('bw','Black & white',d.color)+opt('color','Full colour',d.color)+'</select></label>'+
       '<label class="field">Sides<select data-f="sides">'+opt('single','One-sided',d.sides)+opt('double','Two-sided',d.sides)+'</select></label>'+
       '<label class="field">Orientation<select data-f="orient">'+opt('portrait','Portrait',d.orient)+opt('landscape','Landscape',d.orient)+'</select></label>'+
-      '<label class="field">Pages<input type="number" min="1" max="999" data-f="pages" value="'+d.pages+'"></label>'+
+      '<label class="field">Pages<input type="number" min="1" max="999" data-f="pages" value="'+d.pages+'"><small class="muted" data-pagehint>'+pagesHint(d)+'</small></label>'+
       '<label class="field">Number of copies<input type="number" min="1" max="100" data-f="copies" value="'+d.copies+'"></label>'+
       '<label class="field wide">Print shop<select data-f="shop">'+so+'</select></label>'+
       '<label class="field wide">Notes for the shop<textarea rows="2" data-f="notes" placeholder="Stapling, binding, page range">'+esc(d.notes)+'</textarea></label></div>'+
@@ -568,7 +587,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+(c('pending')+c('queued'))+'</b><span>Waiting in queue</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing now</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Ready for pickup</span></div></div><div class="stat">'+ic('file','lg')+'<div><b>'+myDrafts().length+'</b><span>Drafts to submit</span></div></div></div>';
     h+='<div class="seg" role="group" aria-label="Sections"><button data-act="tab" data-r="client" data-t="upload" aria-pressed="'+(S.tab.client==='upload')+'">Upload Files</button><button data-act="tab" data-r="client" data-t="jobs" aria-pressed="'+(S.tab.client==='jobs')+'">My Print Jobs ('+m.length+')</button></div>';
     if(S.tab.client==='upload'){
-      h+='<section class="card"><h3>'+ic('upload')+' Upload New File</h3><p class="sub">Upload your files and specify printing requirements. PDF, DOC, DOCX, JPG, PNG or TXT.</p><label class="drop" id="drop"><input type="file" id="fileIn" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt"><b>Drop files here or choose from your device</b><span>Page counts are estimates. Correct them before submitting.</span></label><div>'+myDrafts().map(draftCard).join('')+'</div></section>';
+      h+='<section class="card"><h3>'+ic('upload')+' Upload New File</h3><p class="sub">Upload your files and specify printing requirements. PDF, DOC, DOCX, JPG, PNG or TXT.</p><label class="drop" id="drop"><input type="file" id="fileIn" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.txt"><b>Drop files here or choose from your device</b><span>PrintEase counts the pages of your file. Check the number before submitting.</span></label><div>'+myDrafts().map(draftCard).join('')+'</div></section>';
     }else{
       h+='<section class="card"><h3>'+ic('file')+' My Print Jobs</h3><p class="sub">Track the status of your submitted print jobs. Newest first.</p>';
       h+=m.length?m.map(function(j){
@@ -616,7 +635,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       h+=mineQ.length?mineQ.map(function(j){
         var a='<button class="btn sm" data-act="view" data-id="'+j.id+'">'+ic('eye','sm')+'Preview file</button>';
         if(j.status==='queued')a+='<button class="btn pri sm" data-act="st" data-s="printing" data-id="'+j.id+'">Start printing</button>';
-        if(j.status==='printing')a+='<button class="btn pri sm" data-act="st" data-s="completed" data-id="'+j.id+'">Mark complete</button>';
+        if(j.status==='printing')a+='<button class="btn sm" data-act="printjob" data-id="'+j.id+'">'+ic('printer','sm')+'Print again</button><button class="btn pri sm" data-act="st" data-s="completed" data-id="'+j.id+'">Mark complete</button>';
         return jobCard(j,{owner:true,price:true,steps:true,actions:a});
       }).join(''):emptyBox('clock','Nothing queued yet','Accept a request from the Print Queue and it will show up here');
       h+='</section>';
@@ -629,13 +648,43 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   }
 
   /* --- admin --- */
+  function accountBar(){
+    return '<section class="card" style="margin-bottom:18px"><div class="toolbar"><input id="accQ" type="search" placeholder="Search accounts by name or email" value="'+esc(S.accQ)+'" aria-label="Search accounts"><select id="accF" aria-label="Account type filter">'+opt('all','All accounts',S.accF)+opt('client','Clients',S.accF)+opt('shop','Print shops',S.accF)+'</select></div></section>';
+  }
+  function accountList(accs){
+    var q=(S.accQ||'').toLowerCase(),nC=accs.filter(function(a){return a.type==='client'}).length,nS=accs.length-nC;
+    var list=accs.filter(function(a){return (S.accF==='all'||a.type===S.accF)&&(!q||((a.name||'')+' '+(a.email||'')).toLowerCase().indexOf(q)>-1)}).sort(function(a,b){return a.type===b.type?String(a.name||'').localeCompare(String(b.name||'')):(a.type==='shop'?-1:1)});
+    var h='<section class="card"><h3>'+ic('users')+' Accounts</h3><p class="sub">'+nC+' client'+(nC===1?'':'s')+' and '+nS+' print shop'+(nS===1?'':'s')+' are registered.</p>';
+    h+=list.length?list.map(function(a){
+      var shop=a.type==='shop',mine,det;
+      if(shop){
+        mine=D.jobs.filter(function(j){return j.shop===a.id});
+        det=mine.length+' job'+(mine.length===1?'':'s')+' accepted or assigned · '+mine.filter(function(j){return j.status==='printing'}).length+' printing · '+mine.filter(function(j){return j.status==='completed'}).length+' completed · charges '+priceRange(a.id)+' per page';
+      }else{
+        mine=D.jobs.filter(function(j){return j.ownerId===a.id});
+        det=mine.length+' job'+(mine.length===1?'':'s')+' sent · '+mine.filter(function(j){return j.status==='pending'||j.status==='queued'||j.status==='printing'}).length+' in progress · '+mine.filter(function(j){return j.status==='completed'}).length+' completed';
+      }
+      return '<div class="job acc"><div class="job-top"><div class="who">'+avatar(a,'sm')+'<div style="min-width:0"><div class="fname">'+esc(a.name)+'</div><div class="meta">'+esc(a.email)+'</div></div></div><span class="pill '+(shop?'s-printing':'s-pending')+'">'+(shop?'Print shop':'Client')+'</span></div><div class="meta" style="margin-top:8px">'+det+'</div><div class="actions"><button class="btn sm" data-act="viewprofile" data-id="'+esc(a.id)+'">'+ic('user','sm')+'View profile</button><button class="btn sm" data-act="copy" data-v="'+esc(a.email)+'">Copy email</button></div></div>';
+    }).join(''):emptyBox('users','No accounts found','Try adjusting your search or filter');
+    return h+'</section>';
+  }
+  function accountOverview(){
+    var mini=function(t,label,icn){
+      var l=D.accounts.filter(function(a){return a.type===t}).sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''))});
+      var h='<section class="card"><div class="acchead"><h3>'+ic(icn)+' '+label+' ('+l.length+')</h3>'+(l.length?'<button class="btn sm" data-act="accgo" data-f="'+t+'">See all</button>':'')+'</div><p class="sub">'+(t==='shop'?'Every print shop that has registered.':'Every client that has registered.')+'</p>';
+      h+=l.length?l.slice(0,5).map(function(a){return '<div class="accmini"><div class="who">'+avatar(a,'sm')+'<div style="min-width:0"><div class="fname">'+esc(a.name)+'</div><div class="meta">'+esc(a.email)+'</div></div></div><button class="btn sm" data-act="viewprofile" data-id="'+esc(a.id)+'">View</button></div>'}).join('')+(l.length>5?'<div class="meta" style="padding-top:8px">and '+(l.length-5)+' more. Press See all.</div>':''):'<div class="meta">No '+(t==='shop'?'print shops':'clients')+' have registered yet.</div>';
+      return h+'</section>';
+    };
+    return '<div class="grid2" style="margin-bottom:18px">'+mini('client','Client accounts','user')+mini('shop','Print shop accounts','printer')+'</div>';
+  }
   function pgAdmin(){
     var u=me(),J=D.jobs,c=function(s){return J.filter(function(j){return j.status===s}).length};
     var rate=J.length?Math.round(c('completed')/J.length*100):0;
     var uniq={};J.forEach(function(j){uniq[j.ownerId]=1});
-    var h='<div class="head h-mg"><div><div class="eyebrow rc-mg">Admin</div><h2>Admin Dashboard</h2><p>System overview and management. See every file, check what is waiting at each shop and send pending files to a different shop.</p></div></div>';
+    var h='<div class="head h-mg"><div><div class="eyebrow rc-mg">Admin</div><h2>Admin Dashboard</h2><p>System overview and management. See every file, check what is waiting at each shop, send pending files to a different shop and look through every client and print shop account.</p></div></div>';
     h+='<div class="stats"><div class="stat">'+ic('file','lg')+'<div><b>'+J.length+'</b><span>Total jobs</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div><div class="stat">'+ic('users','lg')+'<div><b>'+D.accounts.length+'</b><span>Total users</span></div></div><div class="stat">'+ic('trend','lg')+'<div><b>'+rate+'%</b><span>Completion rate</span></div></div></div>';
     var br=function(icn,l,n,cls){return '<div class="row"><span>'+ic(icn,'sm')+' '+l+'</span><span class="pill '+cls+'">'+n+'</span></div>'};
+    h+=accountOverview();
     h+='<div class="grid2" style="margin-bottom:18px"><section class="card"><h3>'+ic('chart')+' Job Status Breakdown</h3><p class="sub">All print jobs in the system.</p>'+br('clock','Pending',c('pending'),'s-pending')+br('alert','Queued',c('queued'),'s-queued')+br('printer','Printing',c('printing'),'s-printing')+br('check','Completed',c('completed'),'s-completed')+br('alert','Declined',c('declined'),'s-declined')+'</section>';
     var nCl=D.accounts.filter(function(a){return a.type==='client'}).length;
     h+='<section class="card"><h3>'+ic('activity')+' User Activity</h3><p class="sub">Accounts by type.</p>'+br('user','Clients with jobs',Object.keys(uniq).length+' of '+nCl,'s-pending')+br('printer','Print shops',shops().length,'s-printing')+br('shield','Administrators',D.accounts.filter(function(a){return a.type==='admin'}).length,'s-queued')+'</section></div>';
@@ -648,8 +697,10 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     });
     h+='</section><section class="card"><h3>Notifications sent</h3><p class="sub">Messages delivered to file owners.</p><ul class="log">'+(D.notes.length?D.notes.slice(0,12).map(function(n){var a=acct(n.to);return '<li><b>'+esc(a?a.name:'Unknown')+'</b> · <span class="mono">'+n.job+'</span><br>'+esc(n.text)+'<time>'+fmtT(n.t)+'</time></li>'}).join(''):'<li class="muted">None yet.</li>')+'</ul></section></div>';
     var list=J.filter(function(j){return matchQ(j,S.adminQ,S.adminF)}).sort(function(a,b){return b.t-a.t});
-    h+=filterBar('adminQ','adminF',S.adminQ,S.adminF,'Search all jobs by file name, client name or email');
-    h+='<div class="seg" role="group" aria-label="Sections"><button data-act="tab" data-r="admin" data-t="all" aria-pressed="'+(S.tab.admin==='all')+'">All Jobs ('+list.length+')</button><button data-act="tab" data-r="admin" data-t="recent" aria-pressed="'+(S.tab.admin==='recent')+'">Recent Activity</button></div>';
+    var accs=D.accounts.filter(function(a){return a.type==='client'||a.type==='shop'});
+    if(S.tab.admin==='accounts')h+=accountBar(); else h+=filterBar('adminQ','adminF',S.adminQ,S.adminF,'Search all jobs by file name, client name or email');
+    h+='<div class="seg" role="group" aria-label="Sections"><button data-act="tab" data-r="admin" data-t="all" aria-pressed="'+(S.tab.admin==='all')+'">All Jobs ('+list.length+')</button><button data-act="tab" data-r="admin" data-t="recent" aria-pressed="'+(S.tab.admin==='recent')+'">Recent Activity</button><button data-act="tab" data-r="admin" data-t="accounts" aria-pressed="'+(S.tab.admin==='accounts')+'">Accounts ('+accs.length+')</button></div>';
+    if(S.tab.admin==='accounts')return h+accountList(accs);
     var shown=S.tab.admin==='all'?list:J.slice().sort(function(a,b){return b.t-a.t}).slice(0,5);
     h+='<section class="card"><h3>'+(S.tab.admin==='all'?ic('file')+' All Print Jobs':ic('activity')+' Recent Activity')+'</h3><p class="sub">'+(S.tab.admin==='all'?'Complete overview of all print jobs in the system.':'The latest five print jobs.')+'</p>';
     h+=shown.length?shown.map(function(j){return jobCard(j,{owner:true,email:true,shop:true,price:true})}).join(''):emptyBox('file','No jobs found','Try adjusting your search or filter criteria');
@@ -676,9 +727,11 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   }
   function rateCard(u){
     var m=S.rateMsg;
-    var rows=PAPERS.map(function(x){return '<label class="field">'+esc(x.l)+'<input id="pz-'+x.k+'" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+priceOf(u.id,x.k)+'"></label>'}).join('');
-    return '<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">Set what you charge for each printed page, with its own price for every paper size. The starting price is ₱'+BASE_RATE+' per page (₱10 for A3 and Tabloid). Clients see these prices before they submit a job.</p>'+
-      '<form id="rateForm" novalidate style="display:flex;flex-direction:column;gap:12px"><div class="pricegrid">'+rows+'</div>'+(m?'<p class="'+(m.ok?'ok':'err')+'" role="alert">'+esc(m.t)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" type="submit">Save prices</button><button class="btn" type="button" data-act="ratebase">Reset to starting prices</button></div></form></section>';
+    var rows=PAPERS.map(function(x){return '<div class="pricerow"><b>'+esc(x.l)+'</b>'+
+      '<label class="field">Black and white<input id="pz-'+x.k+'-bw" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+priceOf(u.id,x.k,'bw')+'"></label>'+
+      '<label class="field">Full colour<input id="pz-'+x.k+'-color" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+priceOf(u.id,x.k,'color')+'"></label></div>'}).join('');
+    return '<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">Set what you charge for each printed page. Every paper size has two prices: one for black and white and one for full colour. The starting prices are ₱'+BASE_RATE+' black and white and ₱'+(BASE_RATE*2)+' full colour (₱'+(BASE_RATE*2)+' and ₱'+(BASE_RATE*4)+' for A3 and Tabloid). Clients see these prices before they submit a job.</p>'+
+      '<form id="rateForm" novalidate style="display:flex;flex-direction:column;gap:12px"><div class="pricerows">'+rows+'</div>'+(m?'<p class="'+(m.ok?'ok':'err')+'" role="alert">'+esc(m.t)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" type="submit">Save prices</button><button class="btn" type="button" data-act="ratebase">Reset to starting prices</button></div></form></section>';
   }
   function payEditCard(u){
     return '<section class="card"><h3>'+ic('card')+' Payment</h3><p class="sub">Upload an image clients can use to pay you, such as a QR code or an account screenshot. Clients see it on your profile.</p>'+
@@ -702,17 +755,17 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     return h;
   }
   function pgDetail(){
-    var u=me(),a=acct(S.viewId);
-    if(!a)return '<button class="btn ghost back" data-act="go" data-p="profiles">'+ic('back','sm')+'Back to Profiles</button><section class="card">'+emptyBox('user','Profile not found')+'</section>';
+    var u=me(),a=acct(S.viewId),bk=u.type==='admin'?['dashboard','Back to Dashboard']:['profiles','Back to Profiles'];
+    if(!a)return '<button class="btn ghost back" data-act="go" data-p="'+bk[0]+'">'+ic('back','sm')+bk[1]+'</button><section class="card">'+emptyBox('user','Profile not found')+'</section>';
     var canPay=u.type==='client'&&a.type==='shop';
-    var h='<button class="btn ghost back" data-act="go" data-p="profiles">'+ic('back','sm')+'Back to Profiles</button><div class="narrow stack" style="max-width:660px"><section class="card"><div class="hcenter">'+avatar(a,'xl')+'<div><h2 style="font-size:28px">'+esc(a.name)+'</h2><div style="margin-top:8px"><span class="tag">'+TYPE_L[a.type]+'</span></div></div>'+(a.quote?'<div class="quote" style="width:100%">“'+esc(a.quote)+'”</div>':'')+'</div></section>';
+    var h='<button class="btn ghost back" data-act="go" data-p="'+bk[0]+'">'+ic('back','sm')+bk[1]+'</button><div class="narrow stack" style="max-width:660px"><section class="card"><div class="hcenter">'+avatar(a,'xl')+'<div><h2 style="font-size:28px">'+esc(a.name)+'</h2><div style="margin-top:8px"><span class="tag">'+TYPE_L[a.type]+'</span></div></div>'+(a.quote?'<div class="quote" style="width:100%">“'+esc(a.quote)+'”</div>':'')+'</div></section>';
     h+='<section class="card"><h3>Contact Information</h3><p class="sub">Get in touch with this '+(a.type==='shop'?'print shop':'client')+'.</p><div class="row"><span>'+ic('mail')+' <span class="muted">Email</span><br><b id="em">'+esc(a.email)+'</b></span><button class="btn sm" data-act="copy" data-v="'+esc(a.email)+'">Copy</button></div>';
     if(canPay){
       h+='<div class="row" style="margin-top:10px"><span>'+ic('printer')+' <span class="muted">Shop dashboard</span><br><b>See your jobs at this shop</b></span><button class="btn sm" data-act="shopview">View dashboard</button></div>';
     }
     h+='</section>';
     if(a.type==='shop'){
-      h+='<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">What this print shop charges for each page, by paper size.</p>'+PAPERS.map(function(x){return '<div class="row"><span>'+esc(x.l)+'</span><b>₱'+priceOf(a.id,x.k)+'</b></div>'}).join('')+'</section>';
+      h+='<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">What this print shop charges for each page, by paper size and colour.</p>'+PAPERS.map(function(x){return '<div class="row"><span>'+esc(x.l)+'</span><span><b>'+peso(priceOf(a.id,x.k,'bw'))+'</b> black and white · <b>'+peso(priceOf(a.id,x.k,'color'))+'</b> full colour</span></div>'}).join('')+'</section>';
       var payImg=a.pay?'<img class="payimg" src="'+esc(a.pay)+'" alt="Payment image of '+esc(a.name)+'">':'<div class="empty">'+ic('card','xl')+'<div>This shop has not added a payment image yet</div></div>';
       h+='<section class="card"><h3>'+ic('card')+' Payment</h3>';
       if(canPay){
@@ -736,7 +789,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var mine=jobsFor(function(j){return j.ownerId===u.id&&j.shop===s.id});
     var c=function(x){return mine.filter(function(j){return j.status===x}).length};
     var h='<button class="btn ghost back" data-act="viewprofile" data-id="'+s.id+'">'+ic('back','sm')+'Back to Profile</button>';
-    h+='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>'+esc(s.name)+'</h2><p>Your jobs at this shop. Follow their status here. Only the shop can accept, print or complete them.</p></div><div class="price">'+priceRange(s.id)+'<small>per page, by paper size</small></div></div>';
+    h+='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>'+esc(s.name)+'</h2><p>Your jobs at this shop. Follow their status here. Only the shop can accept, print or complete them.</p></div><div class="price">'+priceRange(s.id)+'<small>per page, by size and colour</small></div></div>';
     h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+c('pending')+'</b><span>Pending</span></div></div><div class="stat">'+ic('alert','lg')+'<div><b>'+c('queued')+'</b><span>Queued</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div></div>';
     h+='<section class="card"><h3>'+ic('file')+' My files at this shop</h3><p class="sub">Files sent to Any available shop show up here once this shop accepts them.</p>';
     h+=mine.length?mine.map(function(j){return jobCard(j,{price:true,steps:true,actions:j.status==='completed'?'<span class="tag">Show ticket '+j.id+' at the counter</span>':''})}).join(''):emptyBox('file','No files at this shop yet','Choose this shop when you submit a print job');
@@ -1094,11 +1147,13 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       });
     });
   }
+  var LP={};
   function loadPreview(j){
     S.fc=S.fc||{};
-    if(!j||!j.hasFile||S.fc[j.id])return;
+    if(!j||!j.hasFile)return Promise.resolve();
+    if(S.fc[j.id])return LP[j.id]||Promise.resolve();
     S.fc[j.id]={k:'load'};
-    FILES.get(j.id,j.ownerId).then(function(b){
+    return LP[j.id]=FILES.get(j.id,j.ownerId).then(function(b){
       if(!b)return {k:'none'};
       var n=j.name||'',t=(b.type||j.type||'').toLowerCase(),isPdf=t==='application/pdf'||/\.pdf$/i.test(n);
       var u=URL.createObjectURL(isPdf&&t!=='application/pdf'?new Blob([b],{type:'application/pdf'}):b);
@@ -1114,10 +1169,55 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   function printPanel(j){
     if(!canPrint(j))return '';
     var fc0=(S.fc||{})[j.id],real=!!(fc0&&(fc0.k==='img'||fc0.k==='txt'||fc0.k==='pdf'||fc0.k==='docx'));
-    return '<div class="printbox"><h4>'+ic('printer','sm')+' Print this file</h4><p>Connect this computer or device to the printing machine, then press Print. Your browser opens its print window, where you pick the printer.'+(real?'':' The original file is not available here, so a layout sheet with the job settings prints instead.')+'</p><ul><li><span>Paper</span> '+esc(paperDef(j.paper).k)+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</li><li><span>Colour</span> '+(j.color==='bw'?'Black &amp; white':'Full colour')+'</li><li><span>Sides</span> '+(j.sides==='double'?'Two-sided':'One-sided')+'</li><li><span>Copies</span> '+j.copies+'</li></ul><button class="btn pri" data-act="printjob" data-id="'+j.id+'">'+ic('printer','sm')+(real?'Print file':'Print layout sheet')+'</button></div>';
+    return '<div class="printbox" id="printbox"><h4>'+ic('printer','sm')+' Print this file</h4>'+(S.autoPrint===j.id?'<div class="autop" role="status">Print started. The print window opens by itself. If it did not appear, press the button below.</div>':'')+'<p>Connect this computer or device to the printing machine, then press Print. Your browser opens its print window, where you pick the printer.'+(real?'':' The original file is not available here, so a layout sheet with the job settings prints instead.')+'</p><ul><li><span>Paper</span> '+esc(paperDef(j.paper).k)+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</li><li><span>Colour</span> '+(j.color==='bw'?'Black &amp; white':'Full colour')+'</li><li><span>Sides</span> '+(j.sides==='double'?'Two-sided':'One-sided')+'</li><li><span>Copies</span> '+j.copies+'</li></ul><button class="btn pri" data-act="printjob" data-id="'+j.id+'">'+ic('printer','sm')+(real?'Print file':'Print layout sheet')+'</button></div>';
+  }
+  function startPrint(j){
+    if(!canPrint(j))return;
+    S.modal=j.id;S.autoPrint=j.id;render();window.scrollTo(0,0);
+    loadPreview(j).then(function(){
+      render();
+      var fr=document.querySelector('.prev iframe');
+      return new Promise(function(res){if(!fr)return res();var t=setTimeout(res,2500);fr.addEventListener('load',function(){clearTimeout(t);setTimeout(res,150)})});
+    }).then(function(){if(S.modal===j.id)printJob(j)});
+  }
+  /* PDF pages are drawn by PDF.js (loaded from a CDN only when a PDF is printed), so the print window opens straight away with the real pages */
+  var PDFJS_V='6.2.108',PDFJS_BASES=['https://cdn.jsdelivr.net/npm/pdfjs-dist@'+PDFJS_V+'/build/','https://unpkg.com/pdfjs-dist@'+PDFJS_V+'/build/'],PDFJS_P=null,PRINTING=false;
+  function loadPdfJs(){
+    if(PDFJS_P)return PDFJS_P;
+    var tryBase=function(i){
+      if(i>=PDFJS_BASES.length)return Promise.reject(new Error('pdfjs'));
+      var b=PDFJS_BASES[i];
+      return import(b+'pdf.min.mjs').then(function(m){
+        return fetch(b+'pdf.worker.min.mjs').then(function(r){if(!r.ok)throw new Error('worker');return r.blob()}).then(function(bl){
+          m.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([bl],{type:'text/javascript'}));return m});
+      }).catch(function(){return tryBase(i+1)});
+    };
+    PDFJS_P=tryBase(0);PDFJS_P.catch(function(){PDFJS_P=null});
+    return PDFJS_P;
+  }
+  function pdfToImages(url,maxPages,onProg){
+    return loadPdfJs().then(function(lib){
+      var task=null,kill=function(){try{if(task)task.destroy()}catch(e){}};
+      return fetch(url).then(function(r){return r.arrayBuffer()}).then(function(buf){task=lib.getDocument({data:buf});return task.promise}).then(function(doc){
+        var n=doc.numPages,urls=[],i=1;
+        if(n>maxPages){kill();throw new Error('toolong')}
+        var next=function(){
+          if(i>n){kill();return urls}
+          return doc.getPage(i).then(function(pg){
+            var v0=pg.getViewport({scale:1}),sc=Math.min(2,Math.max(1,1700/Math.max(v0.width,v0.height))),vp=pg.getViewport({scale:sc}),cv=document.createElement('canvas');
+            cv.width=Math.ceil(vp.width);cv.height=Math.ceil(vp.height);
+            var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);
+            return pg.render({canvasContext:cx,viewport:vp}).promise.then(function(){
+              return new Promise(function(res){cv.toBlob(function(bb){res(bb)},'image/jpeg',0.92)});
+            }).then(function(bb){urls.push(URL.createObjectURL(bb));pg.cleanup();cv.width=cv.height=0;if(onProg)onProg(i,n);i++;return next()});
+          });
+        };
+        return next();
+      });
+    });
   }
   function printJob(j){
-    if(!canPrint(j))return;
+    if(!canPrint(j)||PRINTING)return;
     var old=document.getElementById('printRoot');if(old)old.remove();
     var oldS=document.getElementById('printPage');if(oldS)oldS.remove();
     var st=document.createElement('style');st.id='printPage';
@@ -1129,19 +1229,34 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     if(pv&&pv.k==='img')root.innerHTML='<img src="'+esc(pv.u)+'" alt="'+esc(j.name)+'">';
     else if(pv&&pv.k==='txt')root.innerHTML='<pre>'+esc(pv.v)+'</pre>';
     else if(pv&&pv.k==='docx')root.innerHTML='<div class="docx">'+pv.v+'</div>';
-    else if(pv&&pv.k==='pdf')viaFrame=$('.prev iframe');
+    else if(pv&&pv.k==='pdf')viaFrame='pdf';
     else{for(k=0;k<16;k++)lines+='<div class="pr" style="width:'+(k%5===4?'70':k%3===2?'88':'100')+'%"></div>';
       root.innerHTML='<div class="pl"><i></i>PrintEase</div><div class="pt">'+esc(j.name)+'</div><div class="ps">Ticket '+j.id+' · '+j.pages+' page'+(j.pages>1?'s':'')+' · '+esc(paperDef(j.paper).k)+' · '+(j.color==='bw'?'Black &amp; white':'Colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+j.copies+' cop'+(j.copies>1?'ies':'y')+'</div>'+lines}
-    var done=function(){var r=document.getElementById('printRoot');if(r)r.remove();var s2=document.getElementById('printPage');if(s2)s2.remove();window.removeEventListener('afterprint',done)};
-    if(viaFrame){
-      try{viaFrame.contentWindow.focus();viaFrame.contentWindow.print();toast('Print window opened. Choose your printer there.');return}
-      catch(er){window.open(pv.u,'_blank');toast('The file opened in a new tab. Print it from there.');return}
+    var urls=[];
+    var done=function(){var r=document.getElementById('printRoot');if(r)r.remove();var s2=document.getElementById('printPage');if(s2)s2.remove();urls.forEach(function(u){URL.revokeObjectURL(u)});urls=[];window.removeEventListener('afterprint',done)};
+    var run=function(){
+      document.body.appendChild(root);
+      window.addEventListener('afterprint',done);
+      var go2=function(){window.print();PRINTING=false;toast('Print window opened. Choose your printer there.')};
+      var ims=[].slice.call(root.querySelectorAll('img'));
+      if(!ims.length){setTimeout(go2,50);return}
+      Promise.all(ims.map(function(im){return im.decode?im.decode().catch(function(){}):Promise.resolve()})).then(go2,go2);
+    };
+    if(viaFrame==='pdf'){
+      /* normal route: draw the pages and print them. If PDF.js cannot load (no internet, password-protected or very long file), use the browser's own PDF viewer instead */
+      var frameFallback=function(){
+        PRINTING=false;
+        var fr=$('.prev iframe');
+        try{fr.contentWindow.focus();fr.contentWindow.print();toast('Print window opened. Choose your printer there.')}
+        catch(er){window.open(pv.u,'_blank');toast('The file opened in a new tab. Print it from there.')}
+      };
+      PRINTING=true;toast('Preparing the pages for printing…');
+      pdfToImages(pv.u,400,function(i,n){if(n>20&&i%20===0)toast('Preparing page '+i+' of '+n+'…')}).then(function(u){
+        urls=u;root.innerHTML=u.map(function(x){return '<img class="pdfpg" src="'+x+'" alt="">'}).join('');run();
+      },function(er){if(window.console)console.warn('PDF pages could not be drawn, using the browser viewer instead:',er&&er.message||er);frameFallback()});
+      return;
     }
-    document.body.appendChild(root);
-    window.addEventListener('afterprint',done);
-    var go2=function(){window.print();toast('Print window opened. Choose your printer there.')};
-    var im=root.querySelector('img');
-    if(im&&im.decode)im.decode().then(go2,go2);else setTimeout(go2,50);
+    run();
   }
   function typeLabel(j){var t=String(j.type||'').toLowerCase(),n=String(j.name||'');
     if(t.indexOf('wordprocessingml')>-1||/\.docx$/i.test(n))return 'Word document (.docx)';
@@ -1166,7 +1281,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     else if(fc&&fc.k==='other')pv=sheet('This file type cannot be shown in the browser, so the sheet shows the print settings.'+dl);
     else if(fc&&fc.k==='none')pv=sheet('The original file was not found in this browser, so the sheet shows the print settings.');
     else pv=sheet('No original file is stored for this job, so the sheet shows the print settings.');
-    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pill(j.status)+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+'</dd><dt>Paper size</dt><dd>'+paperDef(j.paper).k+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
+    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pill(j.status)+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+(j.pagesHow==='detected'?' (counted from the file)':j.pagesHow==='estimated'?' (estimated)':j.pagesHow==='manual'?' (set by the client)':'')+'</dd><dt>Paper size</dt><dd>'+paperDef(j.paper).k+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
   }
 
   /* ---------- render ---------- */
@@ -1187,18 +1302,131 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     $('#modal').innerHTML=modalHtml();
     bind();persist();
   }
-  function go(p){S.page=p;S.err='';S.bell=false;S.modal=null;S.editing=false;S.pf=null;S.paying=false;S.pwMsg=null;S.rateMsg=null;if(p==='login'||p==='signup'){S.vals={name:'',email:'',type:'client'}}window.scrollTo(0,0);render()}
+  function go(p){S.page=p;S.err='';S.bell=false;S.modal=null;S.autoPrint=null;S.editing=false;S.pf=null;S.paying=false;S.pwMsg=null;S.rateMsg=null;if(p==='login'||p==='signup'){S.vals={name:'',email:'',type:'client'}}window.scrollTo(0,0);render()}
   function login(a){D.userId=a.id;S.err='';S.vals={name:'',email:'',type:'client'};S.tab={client:'upload',shop:'queue',admin:'all'};go('dashboard');toast('Signed in as '+a.name)}
   function fail(m,v){S.err=m;S.vals=v||S.vals;render()}
   function busy(f){var b=f.querySelector('button[type="submit"]');if(b){b.disabled=true;b.textContent='Please wait…'}}
 
   /* ---------- events ---------- */
   function refocus(id,pos){var n=document.getElementById(id);if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}}}
+
+  /* ---------- real page count of an uploaded file ---------- */
+  function lat1(u8){return new TextDecoder('latin1').decode(u8)}
+  function inflate(u8,fmt){return new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream(fmt||'deflate'))).arrayBuffer().then(function(b){return new Uint8Array(b)})}
+  function pdfDict(t,idx){
+    var depth=0,i=idx,lo=Math.max(0,idx-20000),st=-1,a,b;
+    while(i>lo){a=t.charCodeAt(i-1);b=t.charCodeAt(i-2);
+      if(a===62&&b===62){depth++;i-=2}else if(a===60&&b===60){if(depth===0){st=i-2;break}depth--;i-=2}else i--}
+    if(st<0)return '';
+    depth=0;var j=st,hi=Math.min(t.length,st+60000),c,c2;
+    while(j<hi){c=t.charCodeAt(j);c2=t.charCodeAt(j+1);
+      if(c===60&&c2===60){depth++;j+=2}else if(c===62&&c2===62){depth--;j+=2;if(depth===0)return t.slice(st,j)}else j++}
+    return t.slice(st,hi);
+  }
+  /* the page tree: the top node (no /Parent) carries the total /Count; single pages are counted as a second opinion */
+  function pdfScan(t,r){
+    var re=/\/Type\s*\/Pages(?![A-Za-z])/g,m,d,c;
+    while((m=re.exec(t))){d=pdfDict(t,m.index);if(!d)continue;
+      if(/\/Parent\s+\d+\s+\d+\s+R/.test(d))continue;
+      c=/\/Count\s+(\d+)/.exec(d.replace(/\/Kids\s*\[[^\]]*\]/,''));if(c)r.root=parseInt(c[1],10)}
+    var l=t.match(/\/Type\s*\/Page(?![A-Za-z])/g);if(l)r.leaves+=l.length;
+  }
+  function pdfPages(buf){
+    var u8=new Uint8Array(buf),t=lat1(u8),r={root:0,leaves:0};
+    pdfScan(t,r);
+    var re=/\/Type\s*\/ObjStm/g,m,jobs=[],n=0;
+    while((m=re.exec(t))&&n<3000){n++;
+      var si=t.indexOf('stream',m.index);if(si<0)continue;
+      var a=si+6;if(t.charCodeAt(a)===13)a++;if(t.charCodeAt(a)===10)a++;
+      var e=t.indexOf('endstream',a);if(e<0)continue;jobs.push(u8.subarray(a,e));
+    }
+    var chain=Promise.resolve();
+    jobs.forEach(function(d){chain=chain.then(function(){
+      var tries=[d,d.subarray(0,d.length-1),d.subarray(0,d.length-2)];
+      return tries.reduce(function(p,x){return p.then(function(ok){return ok||inflate(x).then(function(o){return o},function(){return null})})},Promise.resolve(null))
+        .then(function(o){if(o)pdfScan(lat1(o),r)});
+    })});
+    return chain.then(function(){var n=r.root>0?r.root:r.leaves;return n>0?Math.min(999,n):0});
+  }
+  function wordCount(s){var m=s.match(/\S+/g);return m?m.length:0}
+  /* Word documents: the page count that Word saved, else the page marks Word left in the text, else an estimate from the words and page breaks */
+  function docxPages(buf){
+    var z=zipRead(buf),td=new TextDecoder();
+    return zipFile(z,'docProps/app.xml').then(function(b){
+      var m=b&&/<(?:\w+:)?Pages>\s*(\d+)\s*<\/(?:\w+:)?Pages>/.exec(td.decode(b));
+      if(m&&parseInt(m[1],10)>0)return {n:Math.min(999,parseInt(m[1],10)),how:'detected'};
+      return zipFile(z,'word/document.xml').then(function(x){
+        if(!x)return null;
+        var doc=new DOMParser().parseFromString(td.decode(x),'application/xml');
+        if(doc.getElementsByTagName('parsererror').length)return null;
+        var all=doc.getElementsByTagName('*'),rendered=0,seg=0,segs=[0],i,el,n;
+        for(i=0;i<all.length;i++){el=all[i];n=el.localName;
+          if(n==='lastRenderedPageBreak')rendered++;
+          else if(n==='br'&&wAt(el,'type')==='page'){segs.push(0)}
+          else if(n==='pageBreakBefore'&&wOn(el)){segs.push(0)}
+          else if(n==='t')segs[segs.length-1]+=wordCount(el.textContent);
+        }
+        if(rendered>0)return {n:Math.min(999,rendered+1),how:'detected'};
+        var pages=0;segs.forEach(function(w,k){pages+=Math.max(k===0||w>0?1:0,Math.ceil(w/450))});
+        return {n:Math.min(999,Math.max(1,pages)),how:'estimated'};
+      });
+    });
+  }
+  /* old .doc files: the page count is stored in the SummaryInformation part of the compound file */
+  function docPages(buf){
+    var u8=new Uint8Array(buf),dv=new DataView(buf);
+    if(u8.length<512||dv.getUint32(0,true)!==0xE011CFD0||dv.getUint32(4,true)!==0xE11AB1A1)return 0;
+    var ss=1<<dv.getUint16(30,true),ms=1<<dv.getUint16(32,true),dirStart=dv.getUint32(48,true),cutoff=dv.getUint32(56,true),mfStart=dv.getUint32(60,true),difStart=dv.getUint32(68,true),difN=dv.getUint32(72,true),i,k;
+    var sec=function(n){return 512+n*ss};
+    var fatSecs=[];for(i=0;i<109;i++){var v=dv.getUint32(76+i*4,true);if(v<0xFFFFFFFA)fatSecs.push(v)}
+    var ds=difStart;for(k=0;k<difN&&ds<0xFFFFFFFA;k++){var o=sec(ds);for(i=0;i<ss/4-1;i++){var w=dv.getUint32(o+i*4,true);if(w<0xFFFFFFFA)fatSecs.push(w)}ds=dv.getUint32(o+ss-4,true)}
+    var fat=[];fatSecs.forEach(function(f){var o=sec(f);for(i=0;i<ss/4;i++)fat.push(o+i*4<u8.length?dv.getUint32(o+i*4,true):0xFFFFFFFE)});
+    var chain=function(st,table,limit){var out=[],n=0;while(st<0xFFFFFFFA&&n<limit){out.push(st);st=table[st];n++}return out};
+    var read=function(st,size){var cs=chain(st,fat,200000),buf2=new Uint8Array(cs.length*ss);cs.forEach(function(c,j){buf2.set(u8.subarray(sec(c),sec(c)+ss),j*ss)});return buf2.subarray(0,size==null?buf2.length:Math.min(size,buf2.length))};
+    var dir=read(dirStart),dd=new DataView(dir.buffer,dir.byteOffset,dir.byteLength),ents=[];
+    for(i=0;i+128<=dir.length;i+=128){var nl=dd.getUint16(i+64,true);if(!nl)continue;var nm='';for(k=0;k<(nl/2)-1;k++)nm+=String.fromCharCode(dd.getUint16(i+k*2,true));ents.push({name:nm,type:dir[i+66],start:dd.getUint32(i+116,true),size:dd.getUint32(i+120,true)})}
+    var si=null,root=null;ents.forEach(function(e){if(e.name==='\u0005SummaryInformation')si=e;if(e.type===5)root=e});
+    if(!si)return 0;
+    var data;
+    if(si.size<cutoff){
+      if(!root)return 0;
+      var mini=read(root.start,root.size),mf=read(mfStart),mfv=new DataView(mf.buffer,mf.byteOffset,mf.byteLength),mt=[];
+      for(i=0;i+4<=mf.length;i+=4)mt.push(mfv.getUint32(i,true));
+      var cs=chain(si.start,mt,100000);data=new Uint8Array(cs.length*ms);cs.forEach(function(c,j){data.set(mini.subarray(c*ms,c*ms+ms),j*ms)});data=data.subarray(0,si.size);
+    }else data=read(si.start,si.size);
+    var pv=new DataView(data.buffer,data.byteOffset,data.byteLength);
+    if(data.length<48)return 0;
+    var off=pv.getUint32(44,true),np=pv.getUint32(off+4,true);
+    for(i=0;i<np&&i<64;i++){var id=pv.getUint32(off+8+i*8,true),po=pv.getUint32(off+12+i*8,true);
+      if(id===14&&pv.getUint32(off+po,true)===3){var n=pv.getInt32(off+po+4,true);return n>0?Math.min(999,n):0}}
+    return 0;
+  }
+  function sizeGuess(f){return Math.min(300,Math.max(1,Math.round(f.size/90000)))}
+  function countPages(f){
+    var nm=(f.name||'').toLowerCase(),ty=f.type||'',ext=nm.split('.').pop();
+    var guess={n:sizeGuess(f),how:'estimated'};
+    var run=function(fn){return Promise.resolve().then(fn).then(function(r){return r&&r.n>0?r:guess},function(){return guess})};
+    if(/^image\//.test(ty)||/^(png|jpe?g|gif|bmp|webp)$/.test(ext))return Promise.resolve({n:1,how:'detected'});
+    if(ty==='application/pdf'||ext==='pdf')return run(function(){return f.arrayBuffer().then(pdfPages).then(function(n){return n>0?{n:n,how:'detected'}:null})});
+    if(ext==='docx')return run(function(){return f.arrayBuffer().then(docxPages)});
+    if(ext==='doc')return run(function(){return f.arrayBuffer().then(function(b){var n=docPages(b);return n>0?{n:n,how:'detected'}:null})});
+    if(ty==='text/plain'||ext==='txt')return run(function(){return f.slice(0,4000000).text().then(function(t){var ln=0;t.split(/\r?\n/).forEach(function(l){ln+=Math.max(1,Math.ceil(l.length/90))});return {n:Math.min(999,Math.max(1,Math.ceil(ln/46))),how:'estimated'}})});
+    return Promise.resolve(guess);
+  }
+  function pagesHint(d){return d.pagesHow==='detected'?'Counted from the file':d.pagesHow==='estimated'?'Estimated. Please check it':d.pagesHow==='manual'?'Set by you':d.pagesHow==='busy'?'Counting the pages…':''}
+
   function addFiles(list){
     Array.prototype.forEach.call(list,function(f){
-      var d={id:'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),ownerId:D.userId,name:f.name,size:f.size,type:f.type||'application/octet-stream',pages:Math.min(300,Math.max(1,Math.round(f.size/90000))),copies:1,paper:'A4',color:'bw',sides:'single',orient:'portrait',shop:'any',notes:'',preview:null};
+      var d={id:'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),ownerId:D.userId,name:f.name,size:f.size,type:f.type||'application/octet-stream',pages:1,pagesHow:'busy',copies:1,paper:'A4',color:'bw',sides:'single',orient:'portrait',shop:'any',notes:'',preview:null};
       S.drafts.push(d);
       d.file=f;
+      countPages(f).then(function(r){
+        if(d.pagesHow!=='busy')return;                      /* the client already typed a number */
+        d.pages=r.n;d.pagesHow=r.how;
+        var card=document.querySelector('[data-draft="'+d.id+'"]');
+        if(card){var pi=card.querySelector('input[data-f="pages"]'),h=card.querySelector('[data-pagehint]'),pr=card.querySelector('[data-price]');
+          if(pi)pi.value=d.pages;if(h)h.textContent=pagesHint(d);if(pr)pr.innerHTML=peso(cost(d))+'<small>'+priceNote(d)+'</small>'}
+      });
     });
     render();toast(list.length+' file'+(list.length>1?'s':'')+' ready to customize');
   }
@@ -1229,7 +1457,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     });
   }
   document.addEventListener('click',function(e){
-    if(e.target.id==='ovl'){S.modal=null;render();return}
+    if(e.target.id==='ovl'){S.modal=null;S.autoPrint=null;render();return}
     var b=e.target.closest('[data-act]');
     if(!b){if(S.bell&&!e.target.closest('.panel')){S.bell=false;renderNav()}return}
     var act=b.dataset.act,id=b.dataset.id,u=me();
@@ -1240,38 +1468,40 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     if(act==='togglepw'){var inp=document.getElementById(b.dataset.t);if(inp){var show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show'}return}
     if(act==='bell'){S.bell=!S.bell;if(!S.bell)D.notes.forEach(function(n){if(u&&n.to===u.id)n.read=true});render();return}
     if(act==='tab'){S.tab[b.dataset.r]=b.dataset.t;render();return}
+    if(act==='accgo'){S.tab.admin='accounts';S.accF=b.dataset.f||'all';S.accQ='';render();var ab=document.getElementById('accQ');if(ab)ab.scrollIntoView({block:'start'});return}
     if(act==='proftab'){S.profTab=b.dataset.t;render();return}
     if(act==='rmdraft'){S.drafts=S.drafts.filter(function(d){return d.id!==id});render();return}
     if(act==='queue'){
       var d=S.drafts.filter(function(x){return x.id===id})[0];if(!d)return;
+      if(d.pagesHow==='busy'){toast('Still counting the pages of this file. Try again in a moment.');return}
       if(CLOUD){
         if(d.busy)return;
         if(d.file&&d.file.size>50*1024*1024){toast('This file is over 50 MB. Choose a smaller file.');return}
         d.busy=true;toast('Submitting…');
         SB.ticket().then(function(tk){return (d.file?FILES.put(tk,d.file,D.userId):Promise.resolve()).then(function(){return tk})}).then(function(tk){
-          D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file});
+          D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file,pagesHow:d.pagesHow||''});
           S.drafts=S.drafts.filter(function(x){return x.id!==id});
           S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');
         }).catch(function(e){d.busy=false;toast('Could not submit. '+SB.msg(e))});
         return;
       }
       var tk='PE-'+pad(++D.seq);
-      D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file});
+      D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file,pagesHow:d.pagesHow||''});
       if(d.file)FILES.put(tk,d.file);
       S.drafts=S.drafts.filter(function(x){return x.id!==id});
       S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');return;
     }
     if(act==='deljob'){var dj0=D.jobs.filter(function(j){return j.id===id})[0];D.jobs=D.jobs.filter(function(j){return j.id!==id});FILES.del(id,dj0&&dj0.ownerId);if(S.fc&&S.fc[id]){try{URL.revokeObjectURL(S.fc[id].u)}catch(er){}delete S.fc[id]}render();toast('Print job deleted');return}
-    if(act==='st'){var j=D.jobs.filter(function(x){return x.id===id})[0];if(j){setStatus(j,b.dataset.s);render()}return}
+    if(act==='st'){var j=D.jobs.filter(function(x){return x.id===id})[0];if(j){setStatus(j,b.dataset.s);render();if(b.dataset.s==='printing')startPrint(j)}return}
     if(act==='decline'){
       var dj=D.jobs.filter(function(x){return x.id===id})[0];if(!dj)return;
       if(dj.shop==='any'){dj.skip=(dj.skip||[]).concat([u.id]);render();toast('Hidden from your queue. Other shops can still accept it.')}
       else{setStatus(dj,'declined');render()}
       return;
     }
-    if(act==='view'){S.modal=id;render();loadPreview(D.jobs.filter(function(x){return x.id===id})[0]);return}
+    if(act==='view'){S.modal=id;S.autoPrint=null;render();loadPreview(D.jobs.filter(function(x){return x.id===id})[0]);return}
     if(act==='printjob'){var pj=D.jobs.filter(function(x){return x.id===id})[0];printJob(pj);return}
-    if(act==='closemodal'){S.modal=null;render();return}
+    if(act==='closemodal'){S.modal=null;S.autoPrint=null;render();return}
     if(act==='editprofile'){S.editing=true;S.err='';S.pf={name:u.name,email:u.email,quote:u.quote||'',img:u.img||''};render();return}
     if(act==='cancelprofile'){S.editing=false;S.pf=null;S.err='';render();return}
     if(act==='saveprofile'){
@@ -1297,9 +1527,9 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   });
   document.addEventListener('input',function(e){
     var t=e.target;
-    if(t.id==='shopQ'||t.id==='adminQ'||t.id==='profQ'){
+    if(t.id==='shopQ'||t.id==='adminQ'||t.id==='profQ'||t.id==='accQ'){
       var pos=t.selectionStart,id=t.id;
-      if(id==='shopQ')S.shopQ=t.value;else if(id==='adminQ')S.adminQ=t.value;else S.profQ=t.value;
+      if(id==='shopQ')S.shopQ=t.value;else if(id==='adminQ')S.adminQ=t.value;else if(id==='accQ')S.accQ=t.value;else S.profQ=t.value;
       render();refocus(id,pos);return;
     }
     if(t.dataset&&t.dataset.pf){S.pf[t.dataset.pf]=t.value;return}
@@ -1309,6 +1539,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var t=e.target;
     if(t.id==='shopF'){S.shopF=t.value;render();return}
     if(t.id==='adminF'){S.adminF=t.value;render();return}
+    if(t.id==='accF'){S.accF=t.value;render();return}
     if(t.dataset&&t.dataset.move){
       var j=D.jobs.filter(function(x){return x.id===t.dataset.move})[0];
       if(j){j.shop=t.value;j.skip=[];render();toast(j.id+' sent to '+shopName(j.shop))}
@@ -1321,10 +1552,10 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var card=el.closest('[data-draft]');if(!card)return;
     var d=S.drafts.filter(function(x){return x.id===card.dataset.draft})[0];if(!d)return;
     var k=el.dataset.f,v=el.value;
-    if(k==='pages')v=Math.max(1,Math.min(999,parseInt(v,10)||1));
+    if(k==='pages'){v=Math.max(1,Math.min(999,parseInt(v,10)||1));d.pagesHow='manual';var ph=card.querySelector('[data-pagehint]');if(ph)ph.textContent=pagesHint(d)}
     if(k==='copies')v=Math.max(1,Math.min(100,parseInt(v,10)||1));
     d[k]=v;
-    if(k==='paper'){var so=card.querySelectorAll('select[data-f="shop"] option');for(var oi=0;oi<so.length;oi++){var sa=acct(so[oi].value);if(sa&&sa.type==='shop')so[oi].textContent=sa.name+' · ₱'+priceOf(sa.id,d.paper)+' per page'}}
+    if(k==='paper'||k==='color'){var so=card.querySelectorAll('select[data-f="shop"] option');for(var oi=0;oi<so.length;oi++){var sa=acct(so[oi].value);if(sa&&sa.type==='shop')so[oi].textContent=sa.name+' · ₱'+priceOf(sa.id,d.paper,d.color)+' per page'}}
     var p=$('[data-price]',card);
     if(p)p.innerHTML=peso(cost(d))+'<small>'+priceNote(d)+'</small>';
   }
@@ -1335,9 +1566,9 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       var ru=me();
       if(!ru||ru.type!=='shop')return;
       var np={},bad=false;
-      PAPERS.forEach(function(x){var v=Math.round(Number(($('#pz-'+x.k)||{}).value));if(!(v>=1&&v<=999))bad=true;np[x.k]=v});
-      if(bad){S.rateMsg={ok:false,t:'Enter a price from ₱1 to ₱999 for every paper size.'};render();return}
-      ru.prices=np;ru.rate=np.A4;S.rateMsg={ok:true,t:'Saved. Your price for each paper size is updated, and new jobs use these prices.'};render();toast('Prices saved');return;
+      PAPERS.forEach(function(x){var e={};['bw','color'].forEach(function(m){var v=Math.round(Number(($('#pz-'+x.k+'-'+m)||{}).value));if(!(v>=1&&v<=999))bad=true;e[m]=v});np[x.k]=e});
+      if(bad){S.rateMsg={ok:false,t:'Enter a price from ₱1 to ₱999 in every box, for black and white and for full colour.'};render();return}
+      ru.prices=np;ru.rate=np.A4.bw;S.rateMsg={ok:true,t:'Saved. Your black-and-white and full-colour prices for every paper size are updated, and new jobs use them.'};render();toast('Prices saved');return;
     }
     if(f.id==='pwForm'){
       e.preventDefault();
@@ -1389,7 +1620,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   });
   document.addEventListener('keydown',function(e){
     if(e.key!=='Escape')return;
-    if(S.modal){S.modal=null;render()}
+    if(S.modal){S.modal=null;S.autoPrint=null;render()}
     else if(S.bell){S.bell=false;renderNav()}
   });
 
@@ -1402,6 +1633,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   }else render();
 })();
 </script>
+
 
 
 </body>
