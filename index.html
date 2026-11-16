@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+
+
   <title>PrintEase</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -21,7 +23,7 @@
   --pe-bg:#ececf2; --pe-fg:#505570;
   --q-bg:#fff1c7; --q-fg:#7a5600;
   --p-bg:#d5f1f7; --p-fg:#0b5668;
-  --c-bg:#d9f3e1; --c-fg:#1b6a3a;
+  --c-bg:#d9f3e1; --c-fg:#1b6a3a; --r-bg:#fde2e0; --r-fg:#b3261e;
   --d-bg:#fbe0ee; --d-fg:#9b1b5c;
   --shadow:0 1px 2px rgba(20,23,43,.06),0 4px 16px rgba(20,23,43,.05);
 }
@@ -32,7 +34,7 @@
   --mg:#ff5fa8; --mg-soft:#4b1634; --mg-ink:#ffa8d2;
   --yl:#ffd24d; --yl-soft:#4a3a0c; --yl-ink:#ffd978; --hl:#6b5200;
   --pe-bg:#272b44; --pe-fg:#a9aec9; --q-bg:#4a3a0c; --q-fg:#ffd978; --p-bg:#0f3a46; --p-fg:#8fe0f2;
-  --c-bg:#133c24; --c-fg:#8fe0ae; --d-bg:#4b1634; --d-fg:#ffa8d2;
+  --c-bg:#133c24; --c-fg:#8fe0ae; --r-bg:#4d1a1a; --r-fg:#ff9a92; --d-bg:#4b1634; --d-fg:#ffa8d2;
   --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0e1120; --surface:#171b31; --surface-2:#1d2240; --ink:#eceefa; --muted:#9aa0bd; --line:#2a3050;
@@ -41,7 +43,7 @@
   --mg:#ff5fa8; --mg-soft:#4b1634; --mg-ink:#ffa8d2;
   --yl:#ffd24d; --yl-soft:#4a3a0c; --yl-ink:#ffd978; --hl:#6b5200;
   --pe-bg:#272b44; --pe-fg:#a9aec9; --q-bg:#4a3a0c; --q-fg:#ffd978; --p-bg:#0f3a46; --p-fg:#8fe0f2;
-  --c-bg:#133c24; --c-fg:#8fe0ae; --d-bg:#4b1634; --d-fg:#ffa8d2;
+  --c-bg:#133c24; --c-fg:#8fe0ae; --r-bg:#4d1a1a; --r-fg:#ff9a92; --d-bg:#4b1634; --d-fg:#ffa8d2;
   --shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -69,6 +71,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .brand h1{font-size:21px}
 .brand p{margin:0;font-size:12.5px;color:var(--muted)}
 .nav{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+@media(max-width:700px){.nav{width:100%}}
+@media(max-width:480px){.navlinks .btn.sm{padding:8px 9px}.navlinks{gap:6px 4px}}
+.navlinks{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px 8px;margin-left:auto}
 .chip{display:flex;align-items:center;gap:10px;margin-right:6px}
 .chip-t{display:flex;flex-direction:column;line-height:1.25;min-width:0}
 .chip-t b{font-size:14px;overflow-wrap:anywhere}
@@ -108,6 +113,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .s-printing{background:var(--p-bg);color:var(--p-fg)}
 .s-completed{background:var(--c-bg);color:var(--c-fg)}
 .s-declined{background:var(--d-bg);color:var(--d-fg)}
+.s-pickup{background:var(--r-bg);color:var(--r-fg);box-shadow:inset 0 0 0 1.5px var(--r-fg)}
+.pills{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .tag{font-size:11.5px;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:2px 7px;font-weight:600;display:inline-block}
 .field{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
 .field input,.field select,.field textarea,.toolbar input,.toolbar select,.job select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 11px;color:var(--ink);width:100%;min-width:0}
@@ -177,6 +184,20 @@ button,input,select,textarea{font:inherit;color:inherit}
 .opts .pw{grid-column:span 2}
 @media(max-width:560px){.opts .pw{grid-column:auto}}
 .opts .wide{grid-column:1/-1}
+.dpv{margin:0 0 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px;min-width:0}
+.dpv-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 10px;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:8px}
+.dpv-h .ic{vertical-align:-3px;margin-right:4px}
+.dpv-h a{font-weight:600}
+.dpv-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.dpv-strip figure{margin:0;flex:0 0 auto;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#fff;position:relative}
+.dpv-strip img{display:block;height:210px;width:auto;max-width:none}
+.dpv-strip figcaption{position:absolute;left:4px;bottom:4px;background:rgba(20,23,43,.75);color:#fff;font-size:11px;padding:1px 6px;border-radius:5px}
+.dpv-img{display:block;max-width:100%;max-height:260px;margin:auto;border-radius:6px}
+.dpv-txt{margin:0;max-height:190px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 var(--font-mono);background:var(--surface-2);border-radius:6px;padding:8px}
+.dpv-doc{max-height:250px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px;color:#14172b}
+.dpv-tile{display:flex;gap:10px;align-items:center;font-size:13.5px;color:var(--muted)}
+.dpv-tile .ic{flex:none;width:30px;height:30px;color:var(--accent)}
+.dpv-more{margin-top:6px;font-size:12.5px;color:var(--muted)}
 .draft-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
 .price{font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
 .price small{font-family:var(--font-body);font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
@@ -185,7 +206,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .job-top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
 .job .meta{font-size:12.5px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
 .job .note-l{font-size:12.5px;margin-top:6px;font-weight:600}
-.n-print{color:var(--p-fg)}.n-done{color:var(--c-fg)}.n-bad{color:var(--d-fg)}
+.n-pick{color:var(--r-fg)}.n-print{color:var(--p-fg)}.n-done{color:var(--c-fg)}.n-bad{color:var(--d-fg)}
 .steps{display:flex;gap:4px;margin-top:12px}
 .steps i{flex:1;height:5px;border-radius:3px;background:var(--line)}
 .steps i.on{background:var(--accent)}
@@ -477,6 +498,8 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   function shopName(id){if(id==='any')return 'Any available shop';var a=acct(id);return a?a.name:'Unknown shop'}
   function ownerName(j){var a=acct(j.ownerId);return a?a.name:'Unknown'}
   function pill(s){return '<span class="pill s-'+s+'">'+ST[s]+'</span>'}
+  function pickPill(){return '<span class="pill s-pickup">Pickup Completed</span>'}
+  function pills(j){return '<div class="pills">'+pill(j.status)+(j.pickedAt&&j.status==='completed'?pickPill():'')+'</div>'}
   function opt(v,l,cur){return '<option value="'+esc(v)+'"'+(String(cur)===String(v)?' selected':'')+'>'+esc(l)+'</option>'}
   function pad(n){return ('0000'+n).slice(-4)}
   function initial(a){return esc((a.name||'?').charAt(0).toUpperCase())}
@@ -509,9 +532,10 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
         h+='<div class="relwrap"><button class="bell" data-act="bell" aria-label="Notifications, '+unread+' unread" aria-expanded="'+S.bell+'">'+ic('bell')+(unread?'<span class="dot">'+unread+'</span>':'')+'</button>'+(S.bell?notePanel(u):'')+'</div>';
       }
       h+='<div class="chip">'+avatar(u,'sm')+'<span class="chip-t"><b>'+esc(u.name)+'</b><small>'+TYPE_L[u.type]+' account</small></span></div>';
+      h+='<div class="navlinks">';
       if(S.page!=='dashboard')h+='<button class="btn ghost sm" data-act="go" data-p="dashboard">Dashboard</button>';
       if(u.type!=='admin')h+='<button class="btn ghost sm" data-act="go" data-p="profiles">'+ic('users','sm')+'View Profiles</button>';
-      h+='<button class="btn ghost sm" data-act="go" data-p="profile">'+ic('user','sm')+'Profile</button><button class="btn sm" data-act="logout">'+ic('logout','sm')+'Logout</button>';
+      h+='<button class="btn ghost sm" data-act="go" data-p="profile">'+ic('user','sm')+'Profile</button><button class="btn sm" data-act="logout">'+ic('logout','sm')+'Logout</button></div>';
     }
     $('#nav').innerHTML=h;
   }
@@ -551,10 +575,10 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var meta='<span class="mono">'+j.id+'</span>'+(o.owner?' · '+ic('user','sm')+' '+esc(ownerName(j)):'')+(o.email&&acct(j.ownerId)?' · '+esc(acct(j.ownerId).email):'')+' · '+j.copies+' copies · '+paperDef(j.paper).k+' · '+(j.color==='bw'?'B&W':'Colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+fmtD(j.t)+(o.shop?'<br>'+esc(shopName(j.shop)):'')+(o.price?' · '+peso(cost(j)):'');
     var st='';
     if(j.status==='printing')st='<div class="note-l n-print">Currently printing…</div>';
-    if(j.status==='completed')st='<div class="note-l n-done">Completed on '+fmtD(j.doneAt||j.t)+', ready for pickup</div>';
+    if(j.status==='completed')st=j.pickedAt?'<div class="note-l n-pick">Pickup completed on '+fmtD(j.pickedAt)+'</div>':'<div class="note-l n-done">Completed on '+fmtD(j.doneAt||j.t)+', ready for pickup</div>';
     if(j.status==='declined')st='<div class="note-l n-bad">Declined by the shop. Delete it and upload again.</div>';
     if(j.notes&&o.owner)st+='<div class="meta">Note: '+esc(j.notes)+'</div>';
-    return '<div class="job"><div class="job-top"><div style="min-width:0"><div class="fname">'+esc(j.name)+'</div><div class="meta">'+meta+'</div>'+st+'</div>'+pill(j.status)+'</div>'+(o.steps?stepBar(j):'')+(o.actions?'<div class="actions">'+o.actions+'</div>':'')+'</div>';
+    return '<div class="job"><div class="job-top"><div style="min-width:0"><div class="fname">'+esc(j.name)+'</div><div class="meta">'+meta+'</div>'+st+'</div>'+pills(j)+'</div>'+(o.steps?stepBar(j):'')+(o.actions?'<div class="actions">'+o.actions+'</div>':'')+'</div>';
   }
   function stepBar(j){
     if(j.status==='declined')return '';
@@ -566,9 +590,83 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
 
   /* --- client --- */
   function myDrafts(){return S.drafts.filter(function(d){return d.ownerId===D.userId})}
+  /* ---------- client preview of the chosen file (kept per draft, drawn into the card) ---------- */
+  var PV={};
+  function pvKind(f){
+    var n=(f.name||'').toLowerCase(),t=(f.type||'').toLowerCase();
+    if(t==='application/pdf'||/\.pdf$/.test(n))return 'pdf';
+    if(/^image\/(png|jpe?g|gif|webp|bmp|svg\+xml)$/.test(t)||/\.(png|jpe?g|gif|webp|bmp|svg)$/.test(n))return 'img';
+    if(t==='text/plain'||/\.txt$/.test(n))return 'txt';
+    if(/\.docx$/.test(n)||t.indexOf('wordprocessingml')>-1)return 'docx';
+    return 'other';
+  }
+  function pvHead(right){return '<div class="dpv-h"><span>'+ic('eye','sm')+'Preview. Check that this is the right file</span>'+(right||'')+'</div>'}
+  function pvInner(d){
+    var r=PV[d.id],n=esc(d.name);
+    if(!d.file)return '<div class="dpv-tile">'+ic('file','xl')+'<div>'+n+'<br><small>This is a sample file, so there is nothing to preview.</small></div></div>';
+    if(!r||r.k==='load')return pvHead('')+'<div class="muted" style="font-size:13px" role="status">Loading the preview…</div>';
+    if(r.k==='img')return pvHead('<a href="'+esc(r.u)+'" target="_blank" rel="noopener">Open full size</a>')+'<img class="dpv-img" src="'+esc(r.u)+'" alt="Preview of '+n+'">';
+    if(r.k==='txt')return pvHead('')+'<pre class="dpv-txt">'+esc(r.v)+'</pre>'+(r.cut?'<div class="dpv-more">Showing the beginning of the file only.</div>':'');
+    if(r.k==='docx')return pvHead('')+'<div class="dpv-doc"><div class="docx">'+r.v+'</div></div><div class="dpv-more">Reading view of your Word file. The printed layout may differ slightly.</div>';
+    if(r.k==='pdf'){
+      var strip=r.pages.map(function(u,i){return '<figure><img src="'+esc(u)+'" alt="Page '+(i+1)+' of '+n+'"><figcaption>Page '+(i+1)+'</figcaption></figure>'}).join('');
+      return pvHead('<a href="'+esc(r.u)+'" target="_blank" rel="noopener">Open the whole file</a>')+'<div class="dpv-strip" tabindex="0" aria-label="First pages of '+n+'">'+strip+'</div>'+
+        '<div class="dpv-more">'+(r.total>r.pages.length?'Showing pages 1 to '+r.pages.length+' of '+r.total+'.':'Showing '+(r.total===1?'the only page':'all '+r.total+' pages')+'.')+'</div>';
+    }
+    if(r.k==='pdfx')return pvHead('<a href="'+esc(r.u)+'" target="_blank" rel="noopener">Open the file</a>')+'<div class="dpv-tile">'+ic('file','xl')+'<div>'+n+'<br><small>The page images could not be drawn on this device. Use the link to check the file.</small></div></div>';
+    return pvHead('')+'<div class="dpv-tile">'+ic('file','xl')+'<div>'+n+' · '+fmtSize(d.size)+'<br><small>This file type cannot be shown here. The shop will see the real file once you submit it.</small></div></div>';
+  }
+  function pvPaint(id){
+    var d=S.drafts.filter(function(x){return x.id===id})[0],box=document.querySelector('[data-draft="'+id+'"] [data-pv]');
+    if(d&&box)box.innerHTML=pvInner(d);
+  }
+  function pvDrop(id){
+    var r=PV[id];delete PV[id];
+    if(!r)return;
+    if(r.u){try{URL.revokeObjectURL(r.u)}catch(e){}}
+    (r.pages||[]).forEach(function(u){try{URL.revokeObjectURL(u)}catch(e){}});
+  }
+  function pdfFirstPages(f,count){
+    return loadPdfJs().then(function(lib){
+      var task=null,kill=function(){try{if(task)task.destroy()}catch(e){}};
+      return f.arrayBuffer().then(function(buf){task=lib.getDocument({data:buf});return task.promise}).then(function(doc){
+        var n=doc.numPages,m=Math.min(count,n),urls=[],i=1;
+        var next=function(){
+          if(i>m){kill();return {pages:urls,total:n}}
+          return doc.getPage(i).then(function(pg){
+            var v0=pg.getViewport({scale:1}),sc=Math.max(0.4,Math.min(3,440/v0.height)),vp=pg.getViewport({scale:sc}),cv=document.createElement('canvas');
+            cv.width=Math.ceil(vp.width);cv.height=Math.ceil(vp.height);
+            var cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,cv.width,cv.height);
+            return pg.render({canvasContext:cx,viewport:vp}).promise.then(function(){
+              return new Promise(function(res){cv.toBlob(function(bb){res(bb)},'image/jpeg',0.85)});
+            }).then(function(bb){urls.push(URL.createObjectURL(bb));pg.cleanup();cv.width=cv.height=0;i++;return next()});
+          });
+        };
+        return next().catch(function(e){kill();urls.forEach(function(u){URL.revokeObjectURL(u)});throw e});
+      });
+    });
+  }
+  function loadDraftPv(d){
+    if(!d||!d.file||PV[d.id])return;
+    var f=d.file,k=pvKind(f),u,id=d.id;
+    PV[id]={k:'load'};
+    var fin=function(r){
+      if(!PV[id]){(r.pages||[]).forEach(function(x){try{URL.revokeObjectURL(x)}catch(e){}});if(r.u){try{URL.revokeObjectURL(r.u)}catch(e){}}return}   /* removed while loading */
+      PV[id]=r;pvPaint(id);
+    };
+    try{u=URL.createObjectURL(k==='pdf'&&(f.type||'')!=='application/pdf'?new Blob([f],{type:'application/pdf'}):f)}catch(e){fin({k:'other'});return}
+    if(k==='img')return fin({k:'img',u:u});
+    if(k==='txt')return f.slice(0,6000).text().then(function(x){fin({k:'txt',u:u,v:x,cut:f.size>6000})},function(){fin({k:'other',u:u})});
+    if(k==='docx')return docxToHtml(f).then(function(h){fin({k:'docx',u:u,v:h})},function(){fin({k:'other',u:u})});
+    if(k==='pdf'){
+      var fb=function(){fin({k:'pdfx',u:u})},timer=new Promise(function(_,no){setTimeout(function(){no(new Error('slow'))},15000)});
+      return Promise.race([pdfFirstPages(f,3),timer]).then(function(r){fin({k:'pdf',u:u,pages:r.pages,total:r.total})},fb);
+    }
+    fin({k:'other',u:u});
+  }
   function draftCard(d){
     var so=opt('any','Any available shop',d.shop)+shops().map(function(s){return opt(s.id,s.name+' · ₱'+priceOf(s.id,d.paper,d.color)+' per page',d.shop)}).join('');
-    return '<div class="draft" data-draft="'+d.id+'"><div class="draft-top"><div><div class="fname">'+esc(d.name)+'</div><div class="muted" style="font-size:12.5px">'+fmtSize(d.size)+(d.sample?' · sample file':'')+'</div></div><button class="btn sm bad" data-act="rmdraft" data-id="'+d.id+'">Remove</button></div><div class="opts">'+
+    return '<div class="draft" data-draft="'+d.id+'"><div class="draft-top"><div><div class="fname">'+esc(d.name)+'</div><div class="muted" style="font-size:12.5px">'+fmtSize(d.size)+(d.sample?' · sample file':'')+'</div></div><button class="btn sm bad" data-act="rmdraft" data-id="'+d.id+'">Remove</button></div><div class="dpv" data-pv>'+pvInner(d)+'</div><div class="opts">'+
       '<label class="field pw">Paper size<select data-f="paper">'+PAPERS.map(function(x){return opt(x.k,x.l,paperDef(d.paper).k)}).join('')+'</select></label>'+
       '<label class="field">Colour<select data-f="color">'+opt('bw','Black & white',d.color)+opt('color','Full colour',d.color)+'</select></label>'+
       '<label class="field">Sides<select data-f="sides">'+opt('single','One-sided',d.sides)+opt('double','Two-sided',d.sides)+'</select></label>'+
@@ -591,7 +689,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       h+='<section class="card"><h3>'+ic('file')+' My Print Jobs</h3><p class="sub">Track the status of your submitted print jobs. Newest first.</p>';
       h+=m.length?m.map(function(j){
         var a=(j.status==='pending'||j.status==='declined')?'<button class="btn sm bad" data-act="deljob" data-id="'+j.id+'">'+ic('trash','sm')+'Delete</button>':'';
-        if(j.status==='completed')a='<span class="tag">Show ticket '+j.id+' at the counter</span>';
+        if(j.status==='completed')a=j.pickedAt?'':'<span class="tag">Show ticket '+j.id+' at the counter</span>';
         return jobCard(j,{shop:true,price:true,steps:true,actions:a});
       }).join(''):emptyBox('file','No print jobs yet','Upload your first file to get started');
       h+='</section>';
@@ -640,7 +738,10 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       h+='</section>';
     }else{
       h+='<section class="card"><h3>'+ic('check')+' Completed Jobs</h3><p class="sub">Finished jobs waiting for pickup.</p>';
-      h+=done.length?done.map(function(j){return jobCard(j,{owner:true,price:true,actions:'<button class="btn sm" data-act="view" data-id="'+j.id+'">'+ic('eye','sm')+'View file</button>'})}).join(''):emptyBox('check','No completed jobs yet','Completed jobs will appear here');
+            var dq=(S.doneQ||'').trim().toLowerCase(),dl=dq?done.filter(function(j){return (j.name+' '+j.id).toLowerCase().indexOf(dq)>-1}):done;
+      h+='<div class="toolbar" style="margin:4px 0 14px"><input id="doneQ" type="search" placeholder="Search by ticket number or file name" value="'+esc(S.doneQ||'')+'" aria-label="Search completed jobs"></div>';
+      if(dq&&done.length)h+='<p class="meta" style="margin:0 0 10px">Showing '+dl.length+' of '+done.length+' completed job'+(done.length===1?'':'s')+'</p>';
+      h+=dl.length?dl.map(function(j){return jobCard(j,{owner:true,price:true,actions:'<button class="btn sm" data-act="view" data-id="'+j.id+'">'+ic('eye','sm')+'View file</button>'+(j.shop===u.id?(j.pickedAt?'<button class="btn sm" data-act="unpickup" data-id="'+j.id+'">Undo pickup</button>':'<button class="btn pri sm" data-act="pickup" data-id="'+j.id+'">'+ic('check','sm')+'Mark Pickup Completed</button>'):'')})}).join(''):(dq&&done.length?emptyBox('file','No completed job matches "'+esc(S.doneQ.trim())+'"','Check the ticket number or the file name'):emptyBox('check','No completed jobs yet','Completed jobs will appear here'));
       h+='</section>';
     }
     return h;
@@ -791,7 +892,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     h+='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>'+esc(s.name)+'</h2><p>Your jobs at this shop. Follow their status here. Only the shop can accept, print or complete them.</p></div><div class="price">'+priceRange(s.id)+'<small>per page, by size and colour</small></div></div>';
     h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+c('pending')+'</b><span>Pending</span></div></div><div class="stat">'+ic('alert','lg')+'<div><b>'+c('queued')+'</b><span>Queued</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div></div>';
     h+='<section class="card"><h3>'+ic('file')+' My files at this shop</h3><p class="sub">Files sent to Any available shop show up here once this shop accepts them.</p>';
-    h+=mine.length?mine.map(function(j){return jobCard(j,{price:true,steps:true,actions:j.status==='completed'?'<span class="tag">Show ticket '+j.id+' at the counter</span>':''})}).join(''):emptyBox('file','No files at this shop yet','Choose this shop when you submit a print job');
+    h+=mine.length?mine.map(function(j){return jobCard(j,{price:true,steps:true,actions:j.status==='completed'&&!j.pickedAt?'<span class="tag">Show ticket '+j.id+' at the counter</span>':''})}).join(''):emptyBox('file','No files at this shop yet','Choose this shop when you submit a print job');
     return h+'</section>';
   }
 
@@ -1280,7 +1381,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     else if(fc&&fc.k==='other')pv=sheet('This file type cannot be shown in the browser, so the sheet shows the print settings.'+dl);
     else if(fc&&fc.k==='none')pv=sheet('The original file was not found in this browser, so the sheet shows the print settings.');
     else pv=sheet('No original file is stored for this job, so the sheet shows the print settings.');
-    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pill(j.status)+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+(j.pagesHow==='detected'?' (counted from the file)':j.pagesHow==='estimated'?' (estimated)':j.pagesHow==='manual'?' (set by the client)':'')+'</dd><dt>Paper size</dt><dd>'+paperDef(j.paper).k+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
+    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pills(j).replace('class="pills"','class="pills" style="flex-direction:row;justify-content:flex-start;flex-wrap:wrap"')+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+(j.pagesHow==='detected'?' (counted from the file)':j.pagesHow==='estimated'?' (estimated)':j.pagesHow==='manual'?' (set by the client)':'')+'</dd><dt>Paper size</dt><dd>'+paperDef(j.paper).k+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
   }
 
   /* ---------- render ---------- */
@@ -1418,7 +1519,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     Array.prototype.forEach.call(list,function(f){
       var d={id:'d'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),ownerId:D.userId,name:f.name,size:f.size,type:f.type||'application/octet-stream',pages:1,pagesHow:'busy',copies:1,paper:'A4',color:'bw',sides:'single',orient:'portrait',shop:'any',notes:'',preview:null};
       S.drafts.push(d);
-      d.file=f;
+      d.file=f;loadDraftPv(d);
       countPages(f).then(function(r){
         if(d.pagesHow!=='busy')return;                      /* the client already typed a number */
         d.pages=r.n;d.pagesHow=r.how;
@@ -1461,7 +1562,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     if(!b){if(S.bell&&!e.target.closest('.panel')){S.bell=false;renderNav()}return}
     var act=b.dataset.act,id=b.dataset.id,u=me();
     if(act==='go'){go(b.dataset.p);return}
-    if(act==='logout'){if(CLOUD){SB.logout().then(function(){D.userId=null;S.bell=false;S.fc={};go('home');toast('Signed out')});return}D.userId=null;S.bell=false;S.drafts.forEach(function(){});go('home');toast('Signed out');return}
+    if(act==='logout'){S.doneQ='';if(CLOUD){SB.logout().then(function(){D.userId=null;S.bell=false;S.fc={};go('home');toast('Signed out')});return}D.userId=null;S.bell=false;S.drafts.forEach(function(){});go('home');toast('Signed out');return}
     if(act==='ratebase'){var rb=me();if(rb&&rb.type==='shop'){rb.prices=defaultPrices();rb.rate=BASE_RATE;S.rateMsg={ok:true,t:'Prices reset to the starting prices.'};render();toast('Prices reset')}return}
     if(act==='quick'){if(CLOUD)return;var qa=acct(id);if(qa)login(qa);return}
     if(act==='togglepw'){var inp=document.getElementById(b.dataset.t);if(inp){var show=inp.type==='password';inp.type=show?'text':'password';b.textContent=show?'Hide':'Show'}return}
@@ -1469,7 +1570,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     if(act==='tab'){S.tab[b.dataset.r]=b.dataset.t;render();return}
     if(act==='accgo'){S.tab.admin='accounts';S.accF=b.dataset.f||'all';S.accQ='';render();var ab=document.getElementById('accQ');if(ab)ab.scrollIntoView({block:'start'});return}
     if(act==='proftab'){S.profTab=b.dataset.t;render();return}
-    if(act==='rmdraft'){S.drafts=S.drafts.filter(function(d){return d.id!==id});render();return}
+    if(act==='rmdraft'){S.drafts=S.drafts.filter(function(d){return d.id!==id});pvDrop(id);render();return}
     if(act==='queue'){
       var d=S.drafts.filter(function(x){return x.id===id})[0];if(!d)return;
       if(d.pagesHow==='busy'){toast('Still counting the pages of this file. Try again in a moment.');return}
@@ -1479,7 +1580,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
         d.busy=true;toast('Submitting…');
         SB.ticket().then(function(tk){return (d.file?FILES.put(tk,d.file,D.userId):Promise.resolve()).then(function(){return tk})}).then(function(tk){
           D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file,pagesHow:d.pagesHow||''});
-          S.drafts=S.drafts.filter(function(x){return x.id!==id});
+          S.drafts=S.drafts.filter(function(x){return x.id!==id});pvDrop(id);
           S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');
         }).catch(function(e){d.busy=false;toast('Could not submit. '+SB.msg(e))});
         return;
@@ -1487,10 +1588,18 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       var tk='PE-'+pad(++D.seq);
       D.jobs.push({id:tk,name:d.name,ownerId:D.userId,size:d.size,type:d.type,pages:d.pages,copies:d.copies,paper:d.paper,color:d.color,sides:d.sides,orient:d.orient,notes:d.notes,shop:d.shop,skip:[],status:'pending',t:Date.now(),doneAt:0,hasFile:!!d.file,pagesHow:d.pagesHow||''});
       if(d.file)FILES.put(tk,d.file);
-      S.drafts=S.drafts.filter(function(x){return x.id!==id});
+      S.drafts=S.drafts.filter(function(x){return x.id!==id});pvDrop(id);
       S.tab.client='jobs';render();toast('Submitted as '+tk+'. Waiting for a shop to accept it.');return;
     }
     if(act==='deljob'){var dj0=D.jobs.filter(function(j){return j.id===id})[0];D.jobs=D.jobs.filter(function(j){return j.id!==id});FILES.del(id,dj0&&dj0.ownerId);if(S.fc&&S.fc[id]){try{URL.revokeObjectURL(S.fc[id].u)}catch(er){}delete S.fc[id]}render();toast('Print job deleted');return}
+    if(act==='pickup'||act==='unpickup'){
+      var pj=D.jobs.filter(function(x){return x.id===id})[0],psh=me();
+      if(pj&&psh&&psh.type==='shop'&&pj.shop===psh.id&&pj.status==='completed'){
+        if(act==='pickup'){pj.pickedAt=Date.now();notify(pj,pj.name+' was picked up at '+psh.name+'. Pickup completed for ticket '+pj.id+'.');toast('Pickup completed for '+pj.id+'. Owner notified in the app')}
+        else{delete pj.pickedAt;toast('Pickup mark removed from '+pj.id)}
+        render();
+      }
+      return}
     if(act==='st'){var j=D.jobs.filter(function(x){return x.id===id})[0];if(j){setStatus(j,b.dataset.s);render();if(b.dataset.s==='printing')startPrint(j)}return}
     if(act==='decline'){
       var dj=D.jobs.filter(function(x){return x.id===id})[0];if(!dj)return;
@@ -1526,9 +1635,9 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   });
   document.addEventListener('input',function(e){
     var t=e.target;
-    if(t.id==='shopQ'||t.id==='adminQ'||t.id==='profQ'||t.id==='accQ'){
+    if(t.id==='shopQ'||t.id==='adminQ'||t.id==='profQ'||t.id==='accQ'||t.id==='doneQ'){
       var pos=t.selectionStart,id=t.id;
-      if(id==='shopQ')S.shopQ=t.value;else if(id==='adminQ')S.adminQ=t.value;else if(id==='accQ')S.accQ=t.value;else S.profQ=t.value;
+      if(id==='doneQ')S.doneQ=t.value;else if(id==='shopQ')S.shopQ=t.value;else if(id==='adminQ')S.adminQ=t.value;else if(id==='accQ')S.accQ=t.value;else S.profQ=t.value;
       render();refocus(id,pos);return;
     }
     if(t.dataset&&t.dataset.pf){S.pf[t.dataset.pf]=t.value;return}
@@ -1632,6 +1741,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   }else render();
 })();
 </script>
+
 
 
 
