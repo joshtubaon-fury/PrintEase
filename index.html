@@ -250,7 +250,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .prev{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);padding:10px;max-height:240px;overflow:auto;white-space:pre-wrap;font-family:var(--font-mono);font-size:12px;overflow-wrap:anywhere}
 .prev img{max-width:100%;display:block;margin:auto}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.3);z-index:40;max-width:calc(100vw - 32px);text-align:center}
-/* colour layer: print-process cyan, magenta and yellow around the indigo accent */
+/* colored layer: print-process cyan, magenta and yellow around the indigo accent */
 body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 0% -8%,color-mix(in srgb,var(--cy-soft) 75%,transparent),transparent 62%),radial-gradient(820px 400px at 100% -8%,color-mix(in srgb,var(--mg-soft) 75%,transparent),transparent 62%);background-repeat:no-repeat}
 .bar{border-bottom:0}
 .bar::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:2px;background:linear-gradient(90deg,var(--cy) 0 33.3%,var(--mg) 33.3% 66.6%,var(--yl) 66.6%)}
@@ -277,7 +277,7 @@ body{background-color:var(--bg);background-image:radial-gradient(900px 420px at 
 .rc-yl{background:var(--yl-soft);color:var(--yl-ink)}
 .rc-mg{background:var(--mg-soft);color:var(--mg-ink)}
 
-/* stat tiles: icon bubbles cycle through the four colours */
+/* stat tiles: icon bubbles cycle through the four colors */
 .stat>.ic{box-sizing:content-box;width:22px;height:22px;padding:10px;border-radius:12px}
 .stats .stat:nth-child(4n+1)>.ic{background:var(--cy-soft);color:var(--cy-ink)}
 .stats .stat:nth-child(4n+2)>.ic{background:var(--mg-soft);color:var(--mg-ink)}
@@ -487,7 +487,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       var v=(e&&typeof e==='object')?Number(e[m]):Number(e);          /* a single number saved before the two price types applies to both */
       if(v>0)return v;var r=Number(a.rate);if(r>0)return r*(d.p/BASE_RATE)}
     return m==='color'?d.p*2:d.p}
-  function modeName(c){return c==='color'?'colour':'black-and-white'}
+  function modeName(c){return c==='color'?'colored':'black-and-white'}
   function priceRange(shopId){var lo=1e9,hi=0;PAPERS.forEach(function(x){['bw','color'].forEach(function(m){var v=priceOf(shopId,x.k,m);if(v<lo)lo=v;if(v>hi)hi=v})});return '₱'+lo+(hi>lo?'–₱'+hi:'')}
   /* a job keeps the price per page that was set when the shop accepted it; older jobs (no rv) used one rate, doubled for A3 */
   function cost(o){var r=o.rate>0?o.rate:priceOf(o.shop,o.paper,o.color),m=(o.rate>0&&!o.rv&&o.paper==='A3')?2:1;return o.pages*o.copies*r*m}
@@ -572,7 +572,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   /* --- job rows --- */
   function jobCard(j,o){
     o=o||{};
-    var meta='<span class="mono">'+j.id+'</span>'+(o.owner?' · '+ic('user','sm')+' '+esc(ownerName(j)):'')+(o.email&&acct(j.ownerId)?' · '+esc(acct(j.ownerId).email):'')+' · '+j.copies+' copies · '+paperDef(j.paper).k+' · '+(j.color==='bw'?'B&W':'Colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+fmtD(j.t)+(o.shop?'<br>'+esc(shopName(j.shop)):'')+(o.price?' · '+peso(cost(j)):'');
+    var meta='<span class="mono">'+j.id+'</span>'+(o.owner?' · '+ic('user','sm')+' '+esc(ownerName(j)):'')+(o.email&&acct(j.ownerId)?' · '+esc(acct(j.ownerId).email):'')+' · '+j.copies+' copies · '+paperDef(j.paper).k+' · '+(j.color==='bw'?'B&W':'Colored')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+fmtD(j.t)+(o.shop?'<br>'+esc(shopName(j.shop)):'')+(o.price?' · '+peso(cost(j)):'');
     var st='';
     if(j.status==='printing')st='<div class="note-l n-print">Currently printing…</div>';
     if(j.status==='completed')st=j.pickedAt?'<div class="note-l n-pick">Pickup completed on '+fmtD(j.pickedAt)+'</div>':'<div class="note-l n-done">Completed on '+fmtD(j.doneAt||j.t)+', ready for pickup</div>';
@@ -668,7 +668,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var so=opt('any','Any available shop',d.shop)+shops().map(function(s){return opt(s.id,s.name+' · ₱'+priceOf(s.id,d.paper,d.color)+' per page',d.shop)}).join('');
     return '<div class="draft" data-draft="'+d.id+'"><div class="draft-top"><div><div class="fname">'+esc(d.name)+'</div><div class="muted" style="font-size:12.5px">'+fmtSize(d.size)+(d.sample?' · sample file':'')+'</div></div><button class="btn sm bad" data-act="rmdraft" data-id="'+d.id+'">Remove</button></div><div class="dpv" data-pv>'+pvInner(d)+'</div><div class="opts">'+
       '<label class="field pw">Paper size<select data-f="paper">'+PAPERS.map(function(x){return opt(x.k,x.l,paperDef(d.paper).k)}).join('')+'</select></label>'+
-      '<label class="field">Colour<select data-f="color">'+opt('bw','Black & white',d.color)+opt('color','Full colour',d.color)+'</select></label>'+
+      '<label class="field">Colored<select data-f="color">'+opt('bw','Black & white',d.color)+opt('color','Full colored',d.color)+'</select></label>'+
       '<label class="field">Sides<select data-f="sides">'+opt('single','One-sided',d.sides)+opt('double','Two-sided',d.sides)+'</select></label>'+
       '<label class="field">Orientation<select data-f="orient">'+opt('portrait','Portrait',d.orient)+opt('landscape','Landscape',d.orient)+'</select></label>'+
       '<label class="field">Pages<input type="number" min="1" max="999" data-f="pages" value="'+d.pages+'"><small class="muted" data-pagehint>'+pagesHint(d)+'</small></label>'+
@@ -829,8 +829,8 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var m=S.rateMsg;
     var rows=PAPERS.map(function(x){return '<div class="pricerow"><b>'+esc(x.l)+'</b>'+
       '<label class="field">Black and white<input id="pz-'+x.k+'-bw" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+priceOf(u.id,x.k,'bw')+'"></label>'+
-      '<label class="field">Full colour<input id="pz-'+x.k+'-color" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+priceOf(u.id,x.k,'color')+'"></label></div>'}).join('');
-    return '<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">Set what you charge for each printed page. Every paper size has two prices: one for black and white and one for full colour. The starting prices are ₱'+BASE_RATE+' black and white and ₱'+(BASE_RATE*2)+' full colour (₱'+(BASE_RATE*2)+' and ₱'+(BASE_RATE*4)+' for A3 and Tabloid). Clients see these prices before they submit a job.</p>'+
+      '<label class="field">Full colored<input id="pz-'+x.k+'-color" type="number" min="1" max="999" step="1" inputmode="numeric" value="'+priceOf(u.id,x.k,'color')+'"></label></div>'}).join('');
+    return '<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">Set what you charge for each printed page. Every paper size has two prices: one for black and white and one for full colored. The starting prices are ₱'+BASE_RATE+' black and white and ₱'+(BASE_RATE*2)+' full colored (₱'+(BASE_RATE*2)+' and ₱'+(BASE_RATE*4)+' for A3 and Tabloid). Clients see these prices before they submit a job.</p>'+
       '<form id="rateForm" novalidate style="display:flex;flex-direction:column;gap:12px"><div class="pricerows">'+rows+'</div>'+(m?'<p class="'+(m.ok?'ok':'err')+'" role="alert">'+esc(m.t)+'</p>':'')+'<div class="actions" style="margin-top:0"><button class="btn pri" type="submit">Save prices</button><button class="btn" type="button" data-act="ratebase">Reset to starting prices</button></div></form></section>';
   }
   function payEditCard(u){
@@ -865,7 +865,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     }
     h+='</section>';
     if(a.type==='shop'){
-      h+='<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">What this print shop charges for each page, by paper size and colour.</p>'+PAPERS.map(function(x){return '<div class="row"><span>'+esc(x.l)+'</span><span><b>'+peso(priceOf(a.id,x.k,'bw'))+'</b> black and white · <b>'+peso(priceOf(a.id,x.k,'color'))+'</b> full colour</span></div>'}).join('')+'</section>';
+      h+='<section class="card"><h3>'+ic('file')+' Price per page</h3><p class="sub">What this print shop charges for each page, by paper size and color.</p>'+PAPERS.map(function(x){return '<div class="row"><span>'+esc(x.l)+'</span><span><b>'+peso(priceOf(a.id,x.k,'bw'))+'</b> black and white · <b>'+peso(priceOf(a.id,x.k,'color'))+'</b> full colored</span></div>'}).join('')+'</section>';
       var payImg=a.pay?'<img class="payimg" src="'+esc(a.pay)+'" alt="Payment image of '+esc(a.name)+'">':'<div class="empty">'+ic('card','xl')+'<div>This shop has not added a payment image yet</div></div>';
       h+='<section class="card"><h3>'+ic('card')+' Payment</h3>';
       if(canPay){
@@ -889,7 +889,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var mine=jobsFor(function(j){return j.ownerId===u.id&&j.shop===s.id});
     var c=function(x){return mine.filter(function(j){return j.status===x}).length};
     var h='<button class="btn ghost back" data-act="viewprofile" data-id="'+s.id+'">'+ic('back','sm')+'Back to Profile</button>';
-    h+='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>'+esc(s.name)+'</h2><p>Your jobs at this shop. Follow their status here. Only the shop can accept, print or complete them.</p></div><div class="price">'+priceRange(s.id)+'<small>per page, by size and colour</small></div></div>';
+    h+='<div class="head h-yl"><div><div class="eyebrow rc-yl">Print shop</div><h2>'+esc(s.name)+'</h2><p>Your jobs at this shop. Follow their status here. Only the shop can accept, print or complete them.</p></div><div class="price">'+priceRange(s.id)+'<small>per page, by size and color</small></div></div>';
     h+='<div class="stats"><div class="stat">'+ic('clock','lg')+'<div><b>'+c('pending')+'</b><span>Pending</span></div></div><div class="stat">'+ic('alert','lg')+'<div><b>'+c('queued')+'</b><span>Queued</span></div></div><div class="stat">'+ic('printer','lg')+'<div><b>'+c('printing')+'</b><span>Printing</span></div></div><div class="stat">'+ic('check','lg')+'<div><b>'+c('completed')+'</b><span>Completed</span></div></div></div>';
     h+='<section class="card"><h3>'+ic('file')+' My files at this shop</h3><p class="sub">Files sent to Any available shop show up here once this shop accepts them.</p>';
     h+=mine.length?mine.map(function(j){return jobCard(j,{price:true,steps:true,actions:j.status==='completed'&&!j.pickedAt?'<span class="tag">Show ticket '+j.id+' at the counter</span>':''})}).join(''):emptyBox('file','No files at this shop yet','Choose this shop when you submit a print job');
@@ -1269,7 +1269,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
   function printPanel(j){
     if(!canPrint(j))return '';
     var fc0=(S.fc||{})[j.id],real=!!(fc0&&(fc0.k==='img'||fc0.k==='txt'||fc0.k==='pdf'||fc0.k==='docx'));
-    return '<div class="printbox" id="printbox"><h4>'+ic('printer','sm')+' Print this file</h4>'+(S.autoPrint===j.id?'<div class="autop" role="status">Print started. The print window opens by itself. If it did not appear, press the button below.</div>':'')+'<p>Connect this computer or device to the printing machine, then press Print. Your browser opens its print window, where you pick the printer.'+(real?'':' The original file is not available here, so a layout sheet with the job settings prints instead.')+'</p><ul><li><span>Paper</span> '+esc(paperDef(j.paper).k)+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</li><li><span>Colour</span> '+(j.color==='bw'?'Black &amp; white':'Full colour')+'</li><li><span>Sides</span> '+(j.sides==='double'?'Two-sided':'One-sided')+'</li><li><span>Copies</span> '+j.copies+'</li></ul><button class="btn pri" data-act="printjob" data-id="'+j.id+'">'+ic('printer','sm')+(real?'Print file':'Print layout sheet')+'</button></div>';
+    return '<div class="printbox" id="printbox"><h4>'+ic('printer','sm')+' Print this file</h4>'+(S.autoPrint===j.id?'<div class="autop" role="status">Print started. The print window opens by itself. If it did not appear, press the button below.</div>':'')+'<p>Connect this computer or device to the printing machine, then press Print. Your browser opens its print window, where you pick the printer.'+(real?'':' The original file is not available here, so a layout sheet with the job settings prints instead.')+'</p><ul><li><span>Paper</span> '+esc(paperDef(j.paper).k)+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</li><li><span>Colored</span> '+(j.color==='bw'?'Black &amp; white':'Full colored')+'</li><li><span>Sides</span> '+(j.sides==='double'?'Two-sided':'One-sided')+'</li><li><span>Copies</span> '+j.copies+'</li></ul><button class="btn pri" data-act="printjob" data-id="'+j.id+'">'+ic('printer','sm')+(real?'Print file':'Print layout sheet')+'</button></div>';
   }
   function startPrint(j){
     if(!canPrint(j))return;
@@ -1331,7 +1331,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     else if(pv&&pv.k==='docx')root.innerHTML='<div class="docx">'+pv.v+'</div>';
     else if(pv&&pv.k==='pdf')viaFrame='pdf';
     else{for(k=0;k<16;k++)lines+='<div class="pr" style="width:'+(k%5===4?'70':k%3===2?'88':'100')+'%"></div>';
-      root.innerHTML='<div class="pl"><i></i>PrintEase</div><div class="pt">'+esc(j.name)+'</div><div class="ps">Ticket '+j.id+' · '+j.pages+' page'+(j.pages>1?'s':'')+' · '+esc(paperDef(j.paper).k)+' · '+(j.color==='bw'?'Black &amp; white':'Colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+j.copies+' cop'+(j.copies>1?'ies':'y')+'</div>'+lines}
+      root.innerHTML='<div class="pl"><i></i>PrintEase</div><div class="pt">'+esc(j.name)+'</div><div class="ps">Ticket '+j.id+' · '+j.pages+' page'+(j.pages>1?'s':'')+' · '+esc(paperDef(j.paper).k)+' · '+(j.color==='bw'?'Black &amp; white':'Colored')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+' · '+j.copies+' cop'+(j.copies>1?'ies':'y')+'</div>'+lines}
     var urls=[];
     var done=function(){var r=document.getElementById('printRoot');if(r)r.remove();var s2=document.getElementById('printPage');if(s2)s2.remove();urls.forEach(function(u){URL.revokeObjectURL(u)});urls=[];window.removeEventListener('afterprint',done)};
     var run=function(){
@@ -1370,7 +1370,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     var o=acct(j.ownerId),pv='',fc=(S.fc||{})[j.id];
     var sheet=function(note){
       var lines='',k;for(k=0;k<14;k++)lines+='<i class="'+(k%5===4?'s':k%3===2?'m':'')+'"></i>';
-      return '<div class="sheet"><div class="paper'+(j.orient==='landscape'?' land':'')+(j.color==='color'?' col':'')+'"><b>'+esc(j.name)+'</b><small>'+j.pages+' page'+(j.pages>1?'s':'')+' · '+paperDef(j.paper).k+' · '+(j.color==='bw'?'B&amp;W':'Colour')+'</small>'+lines+'</div></div><p class="fnote">'+note+'</p>';
+      return '<div class="sheet"><div class="paper'+(j.orient==='landscape'?' land':'')+(j.color==='color'?' col':'')+'"><b>'+esc(j.name)+'</b><small>'+j.pages+' page'+(j.pages>1?'s':'')+' · '+paperDef(j.paper).k+' · '+(j.color==='bw'?'B&amp;W':'Colored')+'</small>'+lines+'</div></div><p class="fnote">'+note+'</p>';
     };
     var dl=fc&&fc.u?' <a href="'+esc(fc.u)+'" download="'+esc(j.name)+'">Download the original file</a>':'';
     if(j.hasFile&&(!fc||fc.k==='load'))pv='<div class="sheet"><span class="muted">Loading the file…</span></div>';
@@ -1381,7 +1381,7 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
     else if(fc&&fc.k==='other')pv=sheet('This file type cannot be shown in the browser, so the sheet shows the print settings.'+dl);
     else if(fc&&fc.k==='none')pv=sheet('The original file was not found in this browser, so the sheet shows the print settings.');
     else pv=sheet('No original file is stored for this job, so the sheet shows the print settings.');
-    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pills(j).replace('class="pills"','class="pills" style="flex-direction:row;justify-content:flex-start;flex-wrap:wrap"')+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+(j.pagesHow==='detected'?' (counted from the file)':j.pagesHow==='estimated'?' (estimated)':j.pagesHow==='manual'?' (set by the client)':'')+'</dd><dt>Paper size</dt><dd>'+paperDef(j.paper).k+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colour')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
+    return '<div class="overlay" id="ovl"><div class="modal" role="dialog" aria-modal="true" aria-label="File details"><div class="mhead"><span class="logo" aria-hidden="true">'+ic('printer','lg')+'</span><span><b>PrintEase</b><small>'+esc(shopName(j.shop))+'</small></span></div><h3>'+esc(j.name)+'</h3><dl class="kv"><dt>Ticket</dt><dd class="mono">'+j.id+'</dd><dt>Status</dt><dd>'+pills(j).replace('class="pills"','class="pills" style="flex-direction:row;justify-content:flex-start;flex-wrap:wrap"')+'</dd><dt>Client</dt><dd>'+esc(o?o.name:'Unknown')+(o?' · '+esc(o.email):'')+'</dd><dt>File type</dt><dd>'+esc(typeLabel(j))+' · '+fmtSize(j.size)+'</dd><dt>Copies</dt><dd>'+j.copies+'</dd><dt>Pages</dt><dd>'+j.pages+(j.pagesHow==='detected'?' (counted from the file)':j.pagesHow==='estimated'?' (estimated)':j.pagesHow==='manual'?' (set by the client)':'')+'</dd><dt>Paper size</dt><dd>'+paperDef(j.paper).k+' · '+(j.orient==='landscape'?'Landscape':'Portrait')+'</dd><dt>Print</dt><dd>'+(j.color==='bw'?'Black & white':'Full colored')+' · '+(j.sides==='double'?'Two-sided':'One-sided')+'</dd><dt>Shop</dt><dd>'+esc(shopName(j.shop))+'</dd><dt>Uploaded</dt><dd>'+fmtT(j.t)+'</dd><dt>Notes</dt><dd>'+(j.notes?esc(j.notes):'None')+'</dd></dl>'+pv+printPanel(j)+'<div class="actions"><button class="btn pri" data-act="closemodal">Close</button></div></div></div>';
   }
 
   /* ---------- render ---------- */
@@ -1675,8 +1675,8 @@ window.PRINTEASE_CONFIG = window.PRINTEASE_CONFIG || { url: "https://ednsespjaog
       if(!ru||ru.type!=='shop')return;
       var np={},bad=false;
       PAPERS.forEach(function(x){var e={};['bw','color'].forEach(function(m){var v=Math.round(Number(($('#pz-'+x.k+'-'+m)||{}).value));if(!(v>=1&&v<=999))bad=true;e[m]=v});np[x.k]=e});
-      if(bad){S.rateMsg={ok:false,t:'Enter a price from ₱1 to ₱999 in every box, for black and white and for full colour.'};render();return}
-      ru.prices=np;ru.rate=np.A4.bw;S.rateMsg={ok:true,t:'Saved. Your black-and-white and full-colour prices for every paper size are updated, and new jobs use them.'};render();toast('Prices saved');return;
+      if(bad){S.rateMsg={ok:false,t:'Enter a price from ₱1 to ₱999 in every box, for black and white and for full colored.'};render();return}
+      ru.prices=np;ru.rate=np.A4.bw;S.rateMsg={ok:true,t:'Saved. Your black-and-white and full-colored prices for every paper size are updated, and new jobs use them.'};render();toast('Prices saved');return;
     }
     if(f.id==='pwForm'){
       e.preventDefault();
